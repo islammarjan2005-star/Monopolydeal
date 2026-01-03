@@ -193,6 +193,7 @@
             <button class="action-btn" id="btn-play">Play Card</button>
             <button class="action-btn" id="btn-bank">Bank Card</button>
             <button class="action-btn" id="btn-end">End Turn</button>
+            <button class="action-btn" id="btn-reset" style="margin-top:15px;opacity:0.7">Reset View</button>
         </div>
 
         <div id="camera-hint">🖱️ Drag to rotate • Scroll to zoom</div>
@@ -299,7 +300,7 @@
 
         // ==================== THREE.JS ====================
         let scene, camera, renderer, raycaster, mouse;
-        let cameraAngle = 0, cameraDistance = 5, cameraHeight = 3;
+        let cameraAngle = 0, cameraDistance = 4.5, cameraHeight = 2.8;
         let isDragging = false, lastMouseX = 0, lastMouseY = 0;
         let handCards = [], tableMeshes = [];
         let selectedCard = null, hoveredCard = null;
@@ -333,16 +334,55 @@
             createEnvironment();
             createLighting();
 
-            // Camera controls
+            // Camera controls - mouse
             canvas.addEventListener('mousedown', e => { isDragging = true; lastMouseX = e.clientX; lastMouseY = e.clientY; });
             canvas.addEventListener('mouseup', () => isDragging = false);
             canvas.addEventListener('mouseleave', () => isDragging = false);
             canvas.addEventListener('mousemove', onMouseMove);
             canvas.addEventListener('wheel', e => {
-                cameraDistance = Math.max(3, Math.min(10, cameraDistance + e.deltaY * 0.005));
+                e.preventDefault();
+                cameraDistance = Math.max(2.5, Math.min(8, cameraDistance + e.deltaY * 0.008));
                 updateCamera();
-            });
+                createHandCards();
+            }, { passive: false });
             canvas.addEventListener('click', onClick);
+
+            // Touch controls for mobile
+            let lastTouchX = 0, lastTouchY = 0, touchStartDist = 0;
+            canvas.addEventListener('touchstart', e => {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    lastTouchX = e.touches[0].clientX;
+                    lastTouchY = e.touches[0].clientY;
+                } else if (e.touches.length === 2) {
+                    // Pinch to zoom
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    touchStartDist = Math.sqrt(dx * dx + dy * dy);
+                }
+            }, { passive: true });
+            canvas.addEventListener('touchmove', e => {
+                if (e.touches.length === 1 && isDragging) {
+                    const dx = e.touches[0].clientX - lastTouchX;
+                    const dy = e.touches[0].clientY - lastTouchY;
+                    cameraAngle -= dx * 0.008;
+                    cameraHeight = Math.max(1.5, Math.min(6, cameraHeight - dy * 0.015));
+                    updateCamera();
+                    createHandCards();
+                    lastTouchX = e.touches[0].clientX;
+                    lastTouchY = e.touches[0].clientY;
+                } else if (e.touches.length === 2) {
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const delta = touchStartDist - dist;
+                    cameraDistance = Math.max(2.5, Math.min(8, cameraDistance + delta * 0.015));
+                    updateCamera();
+                    createHandCards();
+                    touchStartDist = dist;
+                }
+            }, { passive: true });
+            canvas.addEventListener('touchend', () => { isDragging = false; });
 
             window.addEventListener('resize', onResize);
             document.getElementById('start-btn').addEventListener('click', startGame);
@@ -350,6 +390,7 @@
             document.getElementById('btn-play').addEventListener('click', playCard);
             document.getElementById('btn-bank').addEventListener('click', bankCard);
             document.getElementById('btn-end').addEventListener('click', endTurn);
+            document.getElementById('btn-reset').addEventListener('click', resetCameraView);
 
             setTimeout(() => document.getElementById('loading').classList.add('hidden'), 800);
             animate();
@@ -549,69 +590,155 @@
             tableMeshes.forEach(m => scene.remove(m));
             tableMeshes = [];
 
-            game.players.forEach((player, pIdx) => {
-                const angle = (pIdx / game.players.length) * Math.PI * 2 - Math.PI / 2;
-                const dist = 2.2;
-                const px = Math.sin(angle) * dist;
-                const pz = Math.cos(angle) * dist;
+            const numPlayers = game.players.length;
 
-                // Player zone marker
+            game.players.forEach((player, pIdx) => {
+                const angle = (pIdx / numPlayers) * Math.PI * 2 - Math.PI / 2;
+                const zoneDist = 2.5; // Distance from center for player zones
+                const px = Math.sin(angle) * zoneDist;
+                const pz = Math.cos(angle) * zoneDist;
+
+                // Direction vectors for this player's zone
+                const toCenter = new THREE.Vector2(-Math.sin(angle), -Math.cos(angle));
+                const rightDir = new THREE.Vector2(Math.cos(angle), -Math.sin(angle));
+
+                // Player zone marker - larger and more visible
+                const zoneColor = pIdx === game.currentPlayer ? 0xffd700 : 0x666666;
                 const zone = new THREE.Mesh(
-                    new THREE.RingGeometry(0.6, 0.65, 32),
-                    new THREE.MeshBasicMaterial({ color: pIdx === game.currentPlayer ? 0xffd700 : 0x444444, side: THREE.DoubleSide })
+                    new THREE.RingGeometry(0.8, 0.88, 48),
+                    new THREE.MeshBasicMaterial({ color: zoneColor, side: THREE.DoubleSide })
                 );
                 zone.rotation.x = -Math.PI / 2;
                 zone.position.set(px, 0.79, pz);
                 tableMeshes.push(zone);
                 scene.add(zone);
 
-                // Properties - fan out from player position
-                let propOffset = -0.5;
-                for (const color in player.properties) {
-                    player.properties[color].forEach((card, i) => {
+                // Player name label on table (simple plane)
+                const labelGeo = new THREE.PlaneGeometry(0.6, 0.15);
+                const labelCanvas = document.createElement('canvas');
+                labelCanvas.width = 200; labelCanvas.height = 50;
+                const lctx = labelCanvas.getContext('2d');
+                lctx.fillStyle = pIdx === game.currentPlayer ? '#ffd700' : '#aaa';
+                lctx.font = 'bold 28px Arial';
+                lctx.textAlign = 'center';
+                lctx.fillText(player.name, 100, 35);
+                const labelTex = new THREE.CanvasTexture(labelCanvas);
+                const label = new THREE.Mesh(labelGeo, new THREE.MeshBasicMaterial({ map: labelTex, transparent: true }));
+                label.rotation.x = -Math.PI / 2;
+                label.position.set(px, 0.791, pz);
+                tableMeshes.push(label);
+                scene.add(label);
+
+                // PROPERTIES - arranged in a row in front of player, facing center
+                const propColors = Object.keys(player.properties);
+                const propStartX = -(propColors.length - 1) * 0.45 / 2;
+
+                propColors.forEach((color, colorIdx) => {
+                    const cards = player.properties[color];
+                    const setSize = COLORS[color]?.size || 3;
+                    const isComplete = cards.length >= setSize;
+
+                    cards.forEach((card, cardIdx) => {
                         const mesh = createCard3D(card);
-                        mesh.position.set(
-                            px + Math.cos(angle + 0.3) * (0.5 + propOffset),
-                            0.8 + i * 0.005,
-                            pz + Math.sin(angle + 0.3) * (0.5 + propOffset)
-                        );
+
+                        // Position properties in arc in front of player
+                        const xOff = propStartX + colorIdx * 0.45;
+                        const posX = px + rightDir.x * xOff + toCenter.x * 0.6;
+                        const posZ = pz + rightDir.y * xOff + toCenter.y * 0.6;
+
+                        mesh.position.set(posX, 0.8 + cardIdx * 0.008, posZ);
                         mesh.rotation.x = -Math.PI / 2;
-                        mesh.rotation.z = angle + Math.PI;
-                        mesh.scale.set(0.8, 0.8, 0.8);
+                        mesh.rotation.z = angle + Math.PI / 2;
+
+                        // Complete sets have a slight glow effect (bigger)
+                        const scale = isComplete ? 0.9 : 0.75;
+                        mesh.scale.set(scale, scale, scale);
+
                         tableMeshes.push(mesh);
                         scene.add(mesh);
                     });
-                    propOffset += 0.4;
-                }
-
-                // Bank - stack to the side
-                player.bank.forEach((card, i) => {
-                    const mesh = createCard3D(card);
-                    mesh.position.set(
-                        px + Math.cos(angle - 0.4) * 0.7 + (i % 3) * 0.12,
-                        0.8 + Math.floor(i / 3) * 0.005,
-                        pz + Math.sin(angle - 0.4) * 0.7
-                    );
-                    mesh.rotation.x = -Math.PI / 2;
-                    mesh.rotation.z = angle + Math.PI + 0.1;
-                    mesh.scale.set(0.6, 0.6, 0.6);
-                    tableMeshes.push(mesh);
-                    scene.add(mesh);
                 });
 
-                // Hand cards (face down for other players)
-                if (pIdx !== game.currentPlayer) {
-                    for (let i = 0; i < Math.min(player.hand.length, 7); i++) {
-                        const card = createCardBack();
-                        card.position.set(
-                            px + Math.cos(angle) * 0.2 + (i - player.hand.length / 2) * 0.15,
-                            0.85,
-                            pz + Math.sin(angle) * 0.2
+                // BANK - positioned to the right side of player zone
+                if (player.bank.length > 0) {
+                    const bankX = px + rightDir.x * 1.0;
+                    const bankZ = pz + rightDir.y * 1.0;
+
+                    // Bank label
+                    const bankLabel = new THREE.Mesh(
+                        new THREE.PlaneGeometry(0.3, 0.1),
+                        new THREE.MeshBasicMaterial({ color: 0x228B22 })
+                    );
+                    bankLabel.rotation.x = -Math.PI / 2;
+                    bankLabel.position.set(bankX, 0.791, bankZ - 0.25);
+                    tableMeshes.push(bankLabel);
+                    scene.add(bankLabel);
+
+                    player.bank.forEach((card, i) => {
+                        const mesh = createCard3D(card);
+                        const row = Math.floor(i / 3);
+                        const col = i % 3;
+                        mesh.position.set(
+                            bankX + col * 0.18 - 0.18,
+                            0.8 + row * 0.01,
+                            bankZ + row * 0.22
                         );
-                        card.rotation.x = -Math.PI / 2;
-                        card.scale.set(0.5, 0.5, 0.5);
+                        mesh.rotation.x = -Math.PI / 2;
+                        mesh.rotation.z = angle + Math.PI / 2;
+                        mesh.scale.set(0.55, 0.55, 0.55);
+                        tableMeshes.push(mesh);
+                        scene.add(mesh);
+                    });
+                }
+
+                // OPPONENT HAND CARDS (face down) - shown behind their zone
+                if (pIdx !== game.currentPlayer && player.hand.length > 0) {
+                    const handCount = Math.min(player.hand.length, 10);
+                    const handSpread = Math.min(handCount * 0.12, 1.0);
+
+                    for (let i = 0; i < handCount; i++) {
+                        const card = createCardBack();
+                        const t = handCount > 1 ? i / (handCount - 1) : 0.5;
+                        const xOff = (t - 0.5) * handSpread;
+
+                        card.position.set(
+                            px - toCenter.x * 0.5 + rightDir.x * xOff,
+                            0.85 + i * 0.003,
+                            pz - toCenter.y * 0.5 + rightDir.y * xOff
+                        );
+                        card.rotation.x = -Math.PI / 2 + 0.2; // Slight angle
+                        card.rotation.z = angle + Math.PI / 2;
+                        card.scale.set(0.45, 0.45, 0.45);
                         tableMeshes.push(card);
                         scene.add(card);
+                    }
+
+                    // Card count indicator
+                    if (player.hand.length > 0) {
+                        const countCanvas = document.createElement('canvas');
+                        countCanvas.width = 64; countCanvas.height = 64;
+                        const cctx = countCanvas.getContext('2d');
+                        cctx.fillStyle = 'rgba(0,0,0,0.8)';
+                        cctx.beginPath();
+                        cctx.arc(32, 32, 28, 0, Math.PI * 2);
+                        cctx.fill();
+                        cctx.fillStyle = '#fff';
+                        cctx.font = 'bold 32px Arial';
+                        cctx.textAlign = 'center';
+                        cctx.fillText(player.hand.length.toString(), 32, 43);
+                        const countTex = new THREE.CanvasTexture(countCanvas);
+                        const countMesh = new THREE.Mesh(
+                            new THREE.PlaneGeometry(0.2, 0.2),
+                            new THREE.MeshBasicMaterial({ map: countTex, transparent: true })
+                        );
+                        countMesh.position.set(
+                            px - toCenter.x * 0.5,
+                            1.0,
+                            pz - toCenter.y * 0.5
+                        );
+                        countMesh.lookAt(camera.position);
+                        tableMeshes.push(countMesh);
+                        scene.add(countMesh);
                     }
                 }
             });
@@ -625,23 +752,43 @@
             if (!player) return;
 
             const count = player.hand.length;
-            const spread = Math.min(count * 0.18, 1.8);
+            if (count === 0) return;
+
+            // Calculate spread based on card count
+            const maxSpread = 2.0;
+            const cardSpacing = Math.min(0.28, maxSpread / count);
+            const totalWidth = cardSpacing * (count - 1);
 
             player.hand.forEach((data, i) => {
                 const card = createCard3D(data);
                 const t = count > 1 ? i / (count - 1) : 0.5;
 
-                // Position relative to camera
-                const angle = cameraAngle;
-                const handDist = 1.8;
-                const x = Math.sin(angle) * handDist + (t - 0.5) * spread * Math.cos(angle);
-                const z = Math.cos(angle) * handDist - (t - 0.5) * spread * Math.sin(angle);
-                const y = 1.4 + (0.25 - Math.pow(t - 0.5, 2)) * 0.2;
+                // Position cards in front of camera using camera's actual position
+                const camPos = camera.position.clone();
+                const lookDir = new THREE.Vector3(0, 0.5, 0).sub(camPos).normalize();
 
-                card.position.set(x, y, z);
-                card.rotation.y = angle + Math.PI;
-                card.rotation.x = -0.3;
-                card.rotation.z = (t - 0.5) * 0.1;
+                // Get right vector for spreading cards horizontally
+                const up = new THREE.Vector3(0, 1, 0);
+                const right = new THREE.Vector3().crossVectors(lookDir, up).normalize();
+
+                // Position: in front of camera, spread horizontally, slightly below eye level
+                const distFromCam = 1.6;
+                const basePos = camPos.clone().add(lookDir.clone().multiplyScalar(distFromCam));
+                basePos.y = camPos.y - 1.2; // Below eye level
+
+                // Spread cards horizontally
+                const offset = (t - 0.5) * totalWidth;
+                const cardPos = basePos.clone().add(right.clone().multiplyScalar(offset));
+
+                // Arc the cards slightly (middle cards higher)
+                cardPos.y += (0.25 - Math.pow(t - 0.5, 2)) * 0.3;
+
+                card.position.copy(cardPos);
+
+                // Face the camera
+                card.lookAt(camPos);
+                card.rotation.x += 0.4; // Tilt toward player for readability
+                card.rotation.z = (t - 0.5) * 0.08; // Slight fan
 
                 card.userData.orig.pos.copy(card.position);
                 card.userData.orig.rot.copy(card.rotation);
@@ -663,6 +810,7 @@
                     viewingPlayer = i;
                     cameraAngle = (i / game.players.length) * Math.PI * 2 - Math.PI / 2 + Math.PI;
                     updateCamera();
+                    createHandCards(); // Reposition hand cards for new camera angle
                     renderPlayerTabs();
                 };
                 container.appendChild(btn);
@@ -704,7 +852,10 @@
             }
 
             document.getElementById('setup-screen').classList.add('hidden');
-            cameraAngle = Math.PI;
+            // Position camera behind player 1's zone
+            cameraAngle = (0 / count) * Math.PI * 2 - Math.PI / 2 + Math.PI;
+            cameraDistance = 4.5;
+            cameraHeight = 2.8;
             updateCamera();
             createHandCards();
             renderTable();
@@ -922,13 +1073,47 @@
             game.phase = 'draw';
             game.turnDrawn = false;
             selectedCard = null;
+            hoveredCard = null;
             viewingPlayer = game.currentPlayer;
-            cameraAngle = (game.currentPlayer / game.players.length) * Math.PI * 2 - Math.PI / 2 + Math.PI;
-            updateCamera();
-            createHandCards();
-            renderTable();
+
+            // Animate camera to new player's position
+            const targetAngle = (game.currentPlayer / game.players.length) * Math.PI * 2 - Math.PI / 2 + Math.PI;
+            animateCameraTo(targetAngle, 4.5, 2.8, 500);
+        }
+
+        function animateCameraTo(targetAngle, targetDist, targetHeight, duration) {
+            const startAngle = cameraAngle;
+            const startDist = cameraDistance;
+            const startHeight = cameraHeight;
+            const startTime = Date.now();
+
+            function update() {
+                const elapsed = Date.now() - startTime;
+                const t = Math.min(elapsed / duration, 1);
+                const ease = 1 - Math.pow(1 - t, 3); // Ease out cubic
+
+                cameraAngle = startAngle + (targetAngle - startAngle) * ease;
+                cameraDistance = startDist + (targetDist - startDist) * ease;
+                cameraHeight = startHeight + (targetHeight - startHeight) * ease;
+                updateCamera();
+                createHandCards();
+
+                if (t < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    renderTable();
+                    renderPlayerTabs();
+                    updateUI();
+                }
+            }
+            update();
+        }
+
+        function resetCameraView() {
+            viewingPlayer = game.currentPlayer;
+            const targetAngle = (game.currentPlayer / game.players.length) * Math.PI * 2 - Math.PI / 2 + Math.PI;
+            animateCameraTo(targetAngle, 4.5, 2.8, 400);
             renderPlayerTabs();
-            updateUI();
         }
 
         function checkWin() {
@@ -1040,15 +1225,20 @@
             const target = card.userData.orig.pos.clone();
             const rot = card.userData.orig.rot.clone();
 
+            // Get direction toward camera
+            const toCamera = new THREE.Vector3().subVectors(camera.position, target).normalize();
+
             if (state === 'select') {
-                target.y += 0.15;
-                const dir = new THREE.Vector3().subVectors(camera.position, target).normalize();
-                target.add(dir.multiplyScalar(0.2));
+                // Move card up and toward camera
+                target.y += 0.2;
+                target.add(toCamera.clone().multiplyScalar(0.3));
             } else if (state === 'hover') {
-                target.y += 0.08;
+                // Slight lift
+                target.y += 0.1;
+                target.add(toCamera.clone().multiplyScalar(0.1));
             }
 
-            animateTo(card, target, rot, 120);
+            animateTo(card, target, rot, 100);
         }
 
         function animateTo(obj, pos, rot, dur) {
