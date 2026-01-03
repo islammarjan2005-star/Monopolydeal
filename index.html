@@ -150,6 +150,82 @@
             position: absolute; color: rgba(255,255,255,0.6); font-size: 11px;
             text-transform: uppercase; letter-spacing: 2px; pointer-events: none;
         }
+
+        /* Card Detail Panel */
+        #card-detail-panel {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(10, 10, 20, 0.98); backdrop-filter: blur(20px);
+            border: 2px solid #ffd700; border-radius: 20px;
+            padding: 0; width: 320px; display: none; z-index: 250;
+            box-shadow: 0 0 60px rgba(255, 215, 0, 0.3);
+            overflow: hidden;
+        }
+        #card-detail-panel.visible { display: block; }
+        .card-detail-header {
+            padding: 20px; text-align: center;
+        }
+        .card-detail-header h2 { color: #ffd700; margin: 0; font-size: 22px; }
+        .card-detail-header .card-type { color: #aaa; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px; }
+        .card-detail-body { padding: 20px; background: rgba(0,0,0,0.3); }
+        .card-detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .card-detail-row:last-child { border-bottom: none; }
+        .card-detail-label { color: #888; font-size: 12px; }
+        .card-detail-value { color: #fff; font-size: 14px; font-weight: 600; }
+        .card-detail-close {
+            position: absolute; top: 10px; right: 15px;
+            background: none; border: none; color: #888; font-size: 24px;
+            cursor: pointer; transition: color 0.2s;
+        }
+        .card-detail-close:hover { color: #ffd700; }
+
+        /* Table View Overlay */
+        #table-view-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); display: none; z-index: 180;
+            overflow-y: auto; padding: 20px;
+        }
+        #table-view-overlay.visible { display: block; }
+        .table-view-header {
+            text-align: center; padding: 20px 0 30px;
+        }
+        .table-view-header h1 { color: #ffd700; font-size: 28px; margin-bottom: 5px; }
+        .table-view-header p { color: #888; font-size: 14px; }
+        .table-view-close {
+            position: fixed; top: 20px; right: 30px;
+            background: rgba(255,215,0,0.2); border: 2px solid #ffd700;
+            color: #ffd700; padding: 12px 25px; border-radius: 10px;
+            cursor: pointer; font-size: 14px; font-weight: 600; z-index: 190;
+        }
+        .table-view-close:hover { background: rgba(255,215,0,0.4); }
+        .table-view-section {
+            max-width: 900px; margin: 0 auto 30px;
+            background: rgba(255,255,255,0.05); border-radius: 15px; padding: 20px;
+        }
+        .table-view-section h2 {
+            color: #ffd700; font-size: 16px; margin-bottom: 15px;
+            padding-bottom: 10px; border-bottom: 1px solid rgba(255,215,0,0.3);
+        }
+        .table-cards-grid {
+            display: flex; flex-wrap: wrap; gap: 15px; justify-content: flex-start;
+        }
+        .table-card-item {
+            width: 140px; background: rgba(0,0,0,0.4); border-radius: 10px;
+            padding: 15px; cursor: pointer; transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .table-card-item:hover { border-color: #ffd700; transform: translateY(-3px); }
+        .table-card-color {
+            width: 100%; height: 60px; border-radius: 6px; margin-bottom: 10px;
+        }
+        .table-card-name { color: #fff; font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+        .table-card-info { color: #888; font-size: 11px; }
+        .table-card-value { color: #4CAF50; font-size: 12px; font-weight: bold; margin-top: 5px; }
+        .set-indicator {
+            display: inline-block; padding: 3px 8px; background: #ffd700;
+            color: #000; font-size: 10px; font-weight: bold; border-radius: 4px;
+            margin-top: 8px;
+        }
+        .empty-section { color: #666; font-style: italic; text-align: center; padding: 30px; }
     </style>
 </head>
 <body>
@@ -193,7 +269,8 @@
             <button class="action-btn" id="btn-play">Play Card</button>
             <button class="action-btn" id="btn-bank">Bank Card</button>
             <button class="action-btn" id="btn-end">End Turn</button>
-            <button class="action-btn" id="btn-reset" style="margin-top:15px;opacity:0.7">Reset View</button>
+            <button class="action-btn" id="btn-table" style="margin-top:15px;background:linear-gradient(180deg,rgba(0,100,0,0.8) 0%,rgba(0,60,0,0.9) 100%)">View My Table</button>
+            <button class="action-btn" id="btn-reset" style="opacity:0.7">Reset View</button>
         </div>
 
         <div id="camera-hint">🖱️ Drag to rotate • Scroll to zoom</div>
@@ -214,6 +291,24 @@
             <p id="winner-name">Player 1</p>
             <button class="action-btn" onclick="location.reload()">Play Again</button>
         </div>
+    </div>
+
+    <div id="table-view-overlay">
+        <button class="table-view-close" id="close-table-view">Back to Game</button>
+        <div class="table-view-header">
+            <h1>Your Table</h1>
+            <p>Click any card for details</p>
+        </div>
+        <div id="table-view-content"></div>
+    </div>
+
+    <div id="card-detail-panel">
+        <button class="card-detail-close" id="close-card-detail">&times;</button>
+        <div class="card-detail-header">
+            <h2 id="detail-card-name">Card Name</h2>
+            <div class="card-type" id="detail-card-type">Property</div>
+        </div>
+        <div class="card-detail-body" id="detail-card-body"></div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
@@ -391,6 +486,9 @@
             document.getElementById('btn-bank').addEventListener('click', bankCard);
             document.getElementById('btn-end').addEventListener('click', endTurn);
             document.getElementById('btn-reset').addEventListener('click', resetCameraView);
+            document.getElementById('btn-table').addEventListener('click', openTableView);
+            document.getElementById('close-table-view').addEventListener('click', closeTableView);
+            document.getElementById('close-card-detail').addEventListener('click', closeCardDetail);
 
             setTimeout(() => document.getElementById('loading').classList.add('hidden'), 800);
             animate();
@@ -1281,6 +1379,226 @@
         function animate() {
             requestAnimationFrame(animate);
             renderer.render(scene, camera);
+        }
+
+        // ==================== TABLE VIEW ====================
+        function openTableView() {
+            const overlay = document.getElementById('table-view-overlay');
+            const content = document.getElementById('table-view-content');
+            const player = game.players[game.currentPlayer];
+
+            let html = '';
+
+            // Properties Section
+            html += '<div class="table-view-section"><h2>Properties</h2>';
+            const propColors = Object.keys(player.properties);
+            if (propColors.length > 0) {
+                html += '<div class="table-cards-grid">';
+                propColors.forEach(color => {
+                    const cards = player.properties[color];
+                    const colorData = COLORS[color];
+                    const isComplete = cards.length >= colorData.size;
+
+                    cards.forEach(card => {
+                        const hexColor = '#' + colorData.hex.toString(16).padStart(6, '0');
+                        html += `
+                            <div class="table-card-item" onclick='showCardDetail(${JSON.stringify(card).replace(/'/g, "&#39;")})'>
+                                <div class="table-card-color" style="background:${hexColor}"></div>
+                                <div class="table-card-name">${card.name}</div>
+                                <div class="table-card-info">${colorData.name}</div>
+                                <div class="table-card-value">$${card.value}M</div>
+                                ${isComplete ? '<span class="set-indicator">COMPLETE SET</span>' : `<span style="color:#888;font-size:10px">${cards.length}/${colorData.size} cards</span>`}
+                            </div>
+                        `;
+                    });
+                });
+                html += '</div>';
+            } else {
+                html += '<div class="empty-section">No properties played yet</div>';
+            }
+            html += '</div>';
+
+            // Bank Section
+            html += '<div class="table-view-section"><h2>Bank</h2>';
+            if (player.bank.length > 0) {
+                const totalValue = player.bank.reduce((s, c) => s + (c.value || 0), 0);
+                html += `<p style="color:#4CAF50;margin-bottom:15px;font-size:14px">Total: $${totalValue}M</p>`;
+                html += '<div class="table-cards-grid">';
+                player.bank.forEach(card => {
+                    html += `
+                        <div class="table-card-item" onclick='showCardDetail(${JSON.stringify(card).replace(/'/g, "&#39;")})'>
+                            <div class="table-card-color" style="background:#228B22"></div>
+                            <div class="table-card-name">${card.name}</div>
+                            <div class="table-card-info">${card.type.toUpperCase()}</div>
+                            <div class="table-card-value">$${card.value}M</div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            } else {
+                html += '<div class="empty-section">No cards in bank</div>';
+            }
+            html += '</div>';
+
+            // Hand Section (preview)
+            html += '<div class="table-view-section"><h2>Hand (' + player.hand.length + ' cards)</h2>';
+            if (player.hand.length > 0) {
+                html += '<div class="table-cards-grid">';
+                player.hand.forEach(card => {
+                    let bgColor = '#666';
+                    let cardType = card.type.toUpperCase();
+                    if (card.type === 'property') {
+                        bgColor = '#' + COLORS[card.color].hex.toString(16).padStart(6, '0');
+                        cardType = COLORS[card.color].name;
+                    } else if (card.type === 'money') {
+                        bgColor = '#228B22';
+                    } else if (card.type === 'action') {
+                        bgColor = '#DAA520';
+                    } else if (card.type === 'rent') {
+                        bgColor = '#DC143C';
+                    } else if (card.type === 'wild') {
+                        bgColor = '#8A2BE2';
+                    }
+                    html += `
+                        <div class="table-card-item" onclick='showCardDetail(${JSON.stringify(card).replace(/'/g, "&#39;")})'>
+                            <div class="table-card-color" style="background:${bgColor}"></div>
+                            <div class="table-card-name">${card.name}</div>
+                            <div class="table-card-info">${cardType}</div>
+                            <div class="table-card-value">$${card.value}M</div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+            } else {
+                html += '<div class="empty-section">No cards in hand</div>';
+            }
+            html += '</div>';
+
+            // Summary Section
+            let completeSets = 0;
+            for (const c in player.properties) {
+                if (player.properties[c].length >= COLORS[c].size) completeSets++;
+            }
+            const bankTotal = player.bank.reduce((s, c) => s + (c.value || 0), 0);
+
+            html += `
+                <div class="table-view-section">
+                    <h2>Summary</h2>
+                    <div style="display:flex;gap:30px;justify-content:center;padding:20px">
+                        <div style="text-align:center">
+                            <div style="font-size:36px;color:#ffd700;font-weight:bold">${completeSets}/3</div>
+                            <div style="color:#888;font-size:12px">Complete Sets</div>
+                        </div>
+                        <div style="text-align:center">
+                            <div style="font-size:36px;color:#4CAF50;font-weight:bold">$${bankTotal}M</div>
+                            <div style="color:#888;font-size:12px">Bank Value</div>
+                        </div>
+                        <div style="text-align:center">
+                            <div style="font-size:36px;color:#87CEEB;font-weight:bold">${Object.keys(player.properties).length}</div>
+                            <div style="color:#888;font-size:12px">Property Colors</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            content.innerHTML = html;
+            overlay.classList.add('visible');
+        }
+
+        function closeTableView() {
+            document.getElementById('table-view-overlay').classList.remove('visible');
+            closeCardDetail();
+        }
+
+        function showCardDetail(card) {
+            const panel = document.getElementById('card-detail-panel');
+            const body = document.getElementById('detail-card-body');
+
+            document.getElementById('detail-card-name').textContent = card.name;
+
+            let typeText = card.type.toUpperCase();
+            if (card.type === 'property' && card.color) {
+                typeText = COLORS[card.color].name + ' PROPERTY';
+            }
+            document.getElementById('detail-card-type').textContent = typeText;
+
+            let html = '';
+
+            // Value
+            html += `<div class="card-detail-row">
+                <span class="card-detail-label">Value</span>
+                <span class="card-detail-value" style="color:#4CAF50">$${card.value}M</span>
+            </div>`;
+
+            // Type-specific info
+            if (card.type === 'property') {
+                const colorData = COLORS[card.color];
+                html += `<div class="card-detail-row">
+                    <span class="card-detail-label">Color Set</span>
+                    <span class="card-detail-value">${colorData.name}</span>
+                </div>`;
+                html += `<div class="card-detail-row">
+                    <span class="card-detail-label">Set Size</span>
+                    <span class="card-detail-value">${colorData.size} cards needed</span>
+                </div>`;
+
+                // Rent values (approximate based on set size)
+                const rentValues = {
+                    brown: [1, 2],
+                    lightBlue: [1, 2, 3],
+                    pink: [1, 2, 4],
+                    orange: [1, 3, 5],
+                    red: [2, 3, 6],
+                    yellow: [2, 4, 6],
+                    green: [2, 4, 7],
+                    blue: [3, 8],
+                    railroad: [1, 2, 3, 4],
+                    utility: [1, 2]
+                };
+                if (rentValues[card.color]) {
+                    html += `<div class="card-detail-row">
+                        <span class="card-detail-label">Rent Values</span>
+                        <span class="card-detail-value">${rentValues[card.color].map(r => '$' + r + 'M').join(', ')}</span>
+                    </div>`;
+                }
+            } else if (card.type === 'action') {
+                html += `<div class="card-detail-row">
+                    <span class="card-detail-label">Effect</span>
+                    <span class="card-detail-value">${card.desc || card.description || 'Special action'}</span>
+                </div>`;
+                html += `<div class="card-detail-row">
+                    <span class="card-detail-label">Can Bank</span>
+                    <span class="card-detail-value">Yes ($${card.value}M)</span>
+                </div>`;
+            } else if (card.type === 'money') {
+                html += `<div class="card-detail-row">
+                    <span class="card-detail-label">Usage</span>
+                    <span class="card-detail-value">Add to bank for payments</span>
+                </div>`;
+            } else if (card.type === 'rent') {
+                const colorList = card.colors ? card.colors.join(', ') : 'Any';
+                html += `<div class="card-detail-row">
+                    <span class="card-detail-label">Applies to</span>
+                    <span class="card-detail-value">${colorList}</span>
+                </div>`;
+                html += `<div class="card-detail-row">
+                    <span class="card-detail-label">Effect</span>
+                    <span class="card-detail-value">Charge rent based on properties</span>
+                </div>`;
+            } else if (card.type === 'wild') {
+                const colorList = card.colors ? card.colors.join(' or ') : 'Any color';
+                html += `<div class="card-detail-row">
+                    <span class="card-detail-label">Can be used as</span>
+                    <span class="card-detail-value">${colorList}</span>
+                </div>`;
+            }
+
+            body.innerHTML = html;
+            panel.classList.add('visible');
+        }
+
+        function closeCardDetail() {
+            document.getElementById('card-detail-panel').classList.remove('visible');
         }
     </script>
 </body>
