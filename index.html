@@ -1,36 +1,736 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎩</text></svg>">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Monopoly Deal Card Game - Play the classic card game online!">
-    <meta name="theme-color" content="#ED1B24">
-    <title>Monopoly Deal - Card Game</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-      body {
-        font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      }
-    </style>
-    <!-- GitHub Pages SPA redirect handling -->
-    <script type="text/javascript">
-      (function(l) {
-        if (l.search[1] === '/' ) {
-          var decoded = l.search.slice(1).split('&').map(function(s) {
-            return s.replace(/~and~/g, '&')
-          }).join('?');
-          window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
-          );
-        }
-      }(window.location))
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monopoly Deal - Card Game</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎩</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --monopoly-red: #ED1B24;
+      --monopoly-green: #1FB25A;
+      --monopoly-gold: #FFD700;
+      --color-brown: #8B4513;
+      --color-light-blue: #87CEEB;
+      --color-pink: #FF69B4;
+      --color-orange: #FF8C00;
+      --color-red: #DC143C;
+      --color-yellow: #FFD700;
+      --color-green: #228B22;
+      --color-blue: #0000CD;
+      --color-railroad: #2F2F2F;
+      --color-utility: #90EE90;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      color: white;
+    }
+    .hidden { display: none !important; }
+
+    /* Setup Screen */
+    .setup-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .setup-container {
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 500px;
+      width: 90%;
+      border: 2px solid var(--monopoly-gold);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .setup-title { text-align: center; margin-bottom: 30px; }
+    .setup-title h1 {
+      font-size: 3rem;
+      background: linear-gradient(180deg, #fff, var(--monopoly-gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+    }
+    .setup-title p { color: rgba(255,255,255,0.7); margin-top: 5px; }
+    .player-inputs { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; }
+    .player-input { display: flex; align-items: center; gap: 15px; }
+    .player-number {
+      width: 40px; height: 40px;
+      background: var(--monopoly-red);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; font-size: 1.2rem;
+    }
+    .player-input input {
+      flex: 1; padding: 12px 20px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 25px;
+      background: rgba(255,255,255,0.1);
+      color: white; font-size: 1rem; outline: none;
+    }
+    .player-input input:focus { border-color: var(--monopoly-gold); }
+    .player-input input::placeholder { color: rgba(255,255,255,0.4); }
+    .btn {
+      padding: 12px 25px; border: none; border-radius: 25px;
+      font-size: 1rem; font-weight: bold; cursor: pointer;
+      text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--monopoly-green), #158f43);
+      color: white; box-shadow: 0 4px 15px rgba(31,178,90,0.4);
+    }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); }
+    .btn-secondary { background: linear-gradient(135deg, #6c757d, #495057); color: white; }
+    .btn-gold { background: linear-gradient(135deg, var(--monopoly-gold), #FFA500); color: #333; }
+    .start-btn { width: 100%; padding: 15px; font-size: 1.2rem; }
+    .how-to-play { margin-top: 30px; text-align: center; }
+    .how-to-play h3 { color: var(--monopoly-gold); margin-bottom: 15px; }
+    .how-to-play p { font-size: 0.85rem; color: rgba(255,255,255,0.7); line-height: 1.8; }
+
+    /* Game Screen */
+    .game-container { display: flex; flex-direction: column; min-height: 100vh; padding: 10px; }
+    .game-header {
+      background: linear-gradient(180deg, var(--monopoly-red), #b81820);
+      border-radius: 15px; padding: 15px 30px; margin-bottom: 15px;
+      display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4); border: 3px solid var(--monopoly-gold);
+      flex-wrap: wrap; gap: 10px;
+    }
+    .game-title {
+      font-size: 1.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 3px;
+      background: linear-gradient(180deg, #fff, #ffd700);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .game-info { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+    .turn-indicator {
+      background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 20px;
+      font-weight: bold; display: flex; align-items: center; gap: 8px;
+    }
+    .actions-dots { display: flex; gap: 4px; }
+    .action-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--monopoly-gold); transition: all 0.3s;
+    }
+    .action-dot.used { background: rgba(255,255,255,0.2); }
+    .deck-info { display: flex; gap: 10px; }
+    .deck-count { background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 15px; font-size: 0.85rem; }
+
+    .message-banner {
+      background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,165,0,0.2));
+      border: 2px solid var(--monopoly-gold); border-radius: 10px;
+      padding: 12px 25px; margin: 10px 0; text-align: center;
+      font-size: 1.1rem; font-weight: 500;
+    }
+
+    .game-board { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+    .opponents-area { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+    .center-area { display: flex; gap: 20px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
+
+    /* Player Board */
+    .player-board {
+      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+      border-radius: 15px; padding: 15px; border: 2px solid rgba(255,255,255,0.2);
+      min-width: 280px; max-width: 350px;
+    }
+    .player-board.current { border-color: var(--monopoly-gold); box-shadow: 0 0 20px rgba(255,215,0,0.6); }
+    .player-board.opponent { transform: scale(0.85); opacity: 0.9; }
+    .player-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px solid rgba(255,255,255,0.2);
+    }
+    .player-name { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: bold; }
+    .player-avatar { font-size: 1.6rem; }
+    .player-stats { display: flex; gap: 10px; font-size: 0.85rem; }
+    .stat { background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 10px; }
+    .player-properties { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; min-height: 50px; }
+    .property-set { display: flex; flex-direction: column; gap: 2px; padding: 5px; background: rgba(0,0,0,0.2); border-radius: 8px; }
+    .property-set.complete { border: 2px solid var(--monopoly-gold); box-shadow: 0 0 10px rgba(255,215,0,0.4); }
+    .set-header { display: flex; gap: 3px; margin-bottom: 3px; }
+    .set-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); }
+    .set-dot.filled { background: var(--monopoly-gold); }
+    .mini-cards { display: flex; gap: 2px; }
+    .mini-card {
+      width: 30px; height: 42px; border-radius: 4px;
+      display: flex; flex-direction: column; overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    .mini-color { height: 40%; }
+    .mini-body { height: 60%; background: white; display: flex; align-items: center; justify-content: center; }
+    .mini-value { font-size: 0.5rem; font-weight: bold; color: #333; }
+    .player-bank {
+      display: flex; flex-wrap: wrap; gap: 4px; padding: 8px;
+      background: rgba(0,0,0,0.2); border-radius: 8px; min-height: 35px;
+    }
+    .bank-card {
+      width: 28px; height: 36px; border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem; font-weight: bold;
+      background: linear-gradient(135deg, #90EE90, #228B22);
+      color: white; text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+    }
+    .bank-total { font-size: 0.8rem; color: var(--monopoly-gold); margin-top: 5px; }
+
+    /* Deck Area */
+    .deck-area { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .deck {
+      width: 100px; height: 140px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--monopoly-red), #8B0000);
+      border: 3px solid var(--monopoly-gold); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; transition: all 0.2s;
+    }
+    .deck:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255,215,0,0.6); }
+    .deck-label { font-size: 0.8rem; color: var(--monopoly-gold); text-transform: uppercase; font-weight: bold; }
+    .deck-num { font-size: 0.7rem; margin-top: 5px; }
+
+    /* Hand Area */
+    .hand-area {
+      background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px;
+      border: 2px solid rgba(255,255,255,0.2); margin-top: auto;
+    }
+    .hand-label { font-size: 0.9rem; margin-bottom: 10px; color: rgba(255,255,255,0.7); display: flex; justify-content: space-between; }
+    .hand-cards { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; min-height: 140px; }
+
+    /* Cards */
+    .card {
+      width: 90px; height: 130px; border-radius: 8px;
+      cursor: pointer; transition: all 0.2s;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3); position: relative; overflow: hidden;
+    }
+    .card:hover { transform: translateY(-10px) scale(1.05); box-shadow: 0 8px 16px rgba(0,0,0,0.4); z-index: 10; }
+    .card.selected { transform: translateY(-20px); box-shadow: 0 0 20px var(--monopoly-gold); }
+
+    .card.property { background: white; display: flex; flex-direction: column; }
+    .card-color-bar { height: 35%; display: flex; align-items: center; justify-content: center; padding: 3px; }
+    .card-name { font-size: 0.5rem; font-weight: bold; text-transform: uppercase; color: white; text-shadow: 1px 1px 1px rgba(0,0,0,0.5); text-align: center; line-height: 1.2; }
+    .card-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5px; color: #333; }
+    .rent-info { font-size: 0.45rem; text-align: center; line-height: 1.4; }
+    .card-value {
+      position: absolute; bottom: 5px; left: 5px;
+      background: var(--monopoly-green); color: white; border-radius: 50%;
+      width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem; font-weight: bold;
+    }
+
+    .card.money {
+      background: linear-gradient(135deg, #90EE90, #228B22);
+      display: flex; align-items: center; justify-content: center;
+      border: 3px solid #1a5c1a; flex-direction: column;
+    }
+    .money-value { font-size: 2rem; font-weight: bold; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+    .money-label { font-size: 0.6rem; color: white; text-transform: uppercase; }
+
+    .card.action {
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      border: 3px solid #cc8800; padding: 8px; display: flex; flex-direction: column;
+    }
+    .action-header { background: rgba(0,0,0,0.2); padding: 4px; border-radius: 4px; text-align: center; margin-bottom: 4px; }
+    .action-title { font-size: 0.55rem; font-weight: bold; color: #333; text-transform: uppercase; }
+    .action-icon { font-size: 1.4rem; text-align: center; margin: 4px 0; }
+    .action-desc { font-size: 0.4rem; color: #333; text-align: center; line-height: 1.3; flex: 1; }
+
+    .card.rent {
+      background: linear-gradient(135deg, #FF6B6B, #EE5A5A);
+      border: 3px solid #cc4444; display: flex; flex-direction: column; padding: 5px;
+    }
+    .rent-title { text-align: center; font-size: 0.8rem; font-weight: bold; color: white; text-transform: uppercase; margin-bottom: 5px; }
+    .rent-colors { display: flex; justify-content: center; gap: 5px; flex: 1; align-items: center; }
+    .rent-block { width: 25px; height: 25px; border-radius: 4px; border: 2px solid white; }
+
+    .card.wild {
+      background: linear-gradient(135deg, #3498DB, #2980B9);
+      border: 3px solid #1a5276; display: flex; flex-direction: column; padding: 5px;
+    }
+    .wild-title { text-align: center; font-size: 0.65rem; font-weight: bold; color: white; text-transform: uppercase; }
+    .wild-colors { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; padding: 5px; flex: 1; align-content: center; }
+    .wild-dot { width: 14px; height: 14px; border-radius: 3px; border: 1px solid white; }
+    .card.wild.rainbow { background: linear-gradient(45deg, var(--color-brown), var(--color-light-blue), var(--color-pink), var(--color-orange), var(--color-red), var(--color-blue)); }
+
+    /* Action Buttons */
+    .action-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 15px; flex-wrap: wrap; }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000;
+    }
+    .modal {
+      background: linear-gradient(135deg, #2a2a4e, #1a1a2e);
+      border-radius: 20px; padding: 30px; max-width: 400px; width: 90%;
+      border: 2px solid var(--monopoly-gold);
+    }
+    .modal-title { font-size: 1.5rem; text-align: center; margin-bottom: 20px; color: var(--monopoly-gold); }
+    .color-picker { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; padding: 15px; }
+    .color-option {
+      width: 50px; height: 50px; border-radius: 10px; cursor: pointer;
+      border: 3px solid transparent; transition: all 0.2s;
+    }
+    .color-option:hover { transform: scale(1.1); border-color: white; }
+    .modal-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
+
+    /* Winner Screen */
+    .winner-screen {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 2000;
+    }
+    .winner-content { text-align: center; }
+    .winner-trophy { font-size: 8rem; margin-bottom: 20px; animation: float 2s ease-in-out infinite; }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    .winner-title { font-size: 3rem; background: linear-gradient(180deg, var(--monopoly-gold), #FFA500); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
+    .winner-name { font-size: 2rem; color: white; margin-bottom: 30px; }
+
+    @media (max-width: 768px) {
+      .game-header { flex-direction: column; padding: 10px; }
+      .game-title { font-size: 1.4rem; }
+      .player-board { min-width: 100%; max-width: 100%; }
+      .player-board.opponent { transform: scale(1); }
+      .card { width: 70px; height: 100px; }
+      .hand-cards { min-height: 110px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Setup Screen -->
+  <div id="setup-screen" class="setup-screen">
+    <div class="setup-container">
+      <div class="setup-title">
+        <h1>Monopoly Deal</h1>
+        <p>The Card Game</p>
+      </div>
+      <div class="player-inputs" id="player-inputs">
+        <div class="player-input">
+          <div class="player-number">1</div>
+          <input type="text" placeholder="Player 1 name" maxlength="15">
+        </div>
+        <div class="player-input">
+          <div class="player-number">2</div>
+          <input type="text" placeholder="Player 2 name" maxlength="15">
+        </div>
+      </div>
+      <div style="text-align: center; margin-bottom: 20px;">
+        <button class="btn btn-secondary" onclick="addPlayer()" id="add-btn">+ Add Player</button>
+      </div>
+      <button class="btn btn-primary start-btn" onclick="startGame()">🎲 Start Game</button>
+      <div class="how-to-play">
+        <h3>How to Play</h3>
+        <p>🎯 Goal: Be the first to collect 3 complete property sets!<br>
+        📥 Draw 2 cards at the start of your turn<br>
+        🃏 Play up to 3 cards per turn<br>
+        💰 Bank cards for monetary value<br>
+        🏠 Collect properties to complete sets</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game-screen" class="game-container hidden">
+    <header class="game-header">
+      <div class="game-title">Monopoly Deal</div>
+      <div class="game-info">
+        <div class="turn-indicator">
+          <span id="current-avatar">🎩</span>
+          <span id="current-name">Player 1</span>'s Turn
+          <div class="actions-dots" id="action-dots"></div>
+        </div>
+        <div class="deck-info">
+          <div class="deck-count">🃏 Deck: <span id="deck-count">0</span></div>
+        </div>
+      </div>
+    </header>
+    <div class="message-banner" id="message">Welcome to Monopoly Deal!</div>
+    <div class="game-board">
+      <div class="opponents-area" id="opponents-area"></div>
+      <div class="center-area">
+        <div class="deck-area">
+          <div class="deck" id="deck" onclick="drawCards()">
+            <span class="deck-label">Draw</span>
+            <span class="deck-num" id="deck-display">0 cards</span>
+          </div>
+        </div>
+        <div id="current-player-board"></div>
+      </div>
+      <div class="hand-area">
+        <div class="hand-label"><span>Your Hand</span><span id="hand-count">0 cards</span></div>
+        <div class="hand-cards" id="hand-cards"></div>
+      </div>
+      <div class="action-buttons" id="action-buttons"></div>
+    </div>
+  </div>
+
+  <!-- Color Picker Modal -->
+  <div id="color-modal" class="modal-overlay hidden">
+    <div class="modal">
+      <h2 class="modal-title">Choose Property Color</h2>
+      <div class="color-picker" id="color-picker"></div>
+      <div class="modal-buttons">
+        <button class="btn btn-secondary" onclick="closeColorModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Winner Screen -->
+  <div id="winner-screen" class="winner-screen hidden">
+    <div class="winner-content">
+      <div class="winner-trophy">🏆</div>
+      <h1 class="winner-title">WINNER!</h1>
+      <p class="winner-name" id="winner-name"></p>
+      <button class="btn btn-gold" onclick="resetGame()">🎲 Play Again</button>
+    </div>
+  </div>
+
+<script>
+// Game Constants
+const COLORS = {
+  brown: { bg: '#8B4513', name: 'Brown', size: 2, rents: [1, 2] },
+  lightBlue: { bg: '#87CEEB', name: 'Light Blue', size: 3, rents: [1, 2, 3] },
+  pink: { bg: '#FF69B4', name: 'Pink', size: 3, rents: [1, 2, 4] },
+  orange: { bg: '#FF8C00', name: 'Orange', size: 3, rents: [1, 3, 5] },
+  red: { bg: '#DC143C', name: 'Red', size: 3, rents: [2, 3, 6] },
+  yellow: { bg: '#FFD700', name: 'Yellow', size: 3, rents: [2, 4, 6] },
+  green: { bg: '#228B22', name: 'Green', size: 3, rents: [2, 4, 7] },
+  blue: { bg: '#0000CD', name: 'Blue', size: 2, rents: [3, 8] },
+  railroad: { bg: '#2F2F2F', name: 'Railroad', size: 4, rents: [1, 2, 3, 4] },
+  utility: { bg: '#90EE90', name: 'Utility', size: 2, rents: [1, 2] }
+};
+
+const PROPERTIES = {
+  brown: ['Mediterranean Ave', 'Baltic Ave'],
+  lightBlue: ['Oriental Ave', 'Vermont Ave', 'Connecticut Ave'],
+  pink: ['St. Charles Pl', 'States Ave', 'Virginia Ave'],
+  orange: ['St. James Pl', 'Tennessee Ave', 'New York Ave'],
+  red: ['Kentucky Ave', 'Indiana Ave', 'Illinois Ave'],
+  yellow: ['Atlantic Ave', 'Ventnor Ave', 'Marvin Gardens'],
+  green: ['Pacific Ave', 'N. Carolina Ave', 'Pennsylvania Ave'],
+  blue: ['Park Place', 'Boardwalk'],
+  railroad: ['Reading RR', 'Pennsylvania RR', 'B&O RR', 'Short Line'],
+  utility: ['Electric Co', 'Water Works']
+};
+
+const AVATARS = ['🎩', '🚗', '🐕', '👢', '🚢', '🎸'];
+const ACTION_ICONS = { passGo: '➡️', dealBreaker: '💔', slyDeal: '🦊', forcedDeal: '🔄', debtCollector: '💰', birthday: '🎂', justSayNo: '🚫', house: '🏠', hotel: '🏨', doubleRent: '✖️2️⃣' };
+
+// Game State
+let game = { players: [], currentPlayer: 0, deck: [], phase: 'setup', actions: 3, selectedCard: null };
+
+// Create Deck
+function createDeck() {
+  const deck = [];
+  let id = 0;
+
+  // Properties
+  for (const [color, names] of Object.entries(PROPERTIES)) {
+    const value = ['brown', 'lightBlue'].includes(color) ? 1 : ['pink', 'orange', 'railroad', 'utility'].includes(color) ? 2 : ['red', 'yellow'].includes(color) ? 3 : 4;
+    names.forEach(name => deck.push({ id: id++, type: 'property', color, name, value }));
+  }
+
+  // Wild cards
+  [['brown', 'lightBlue', 1], ['pink', 'orange', 2], ['red', 'yellow', 3], ['green', 'blue', 4], ['green', 'railroad', 4], ['lightBlue', 'railroad', 4], ['utility', 'railroad', 2]].forEach(([c1, c2, v]) => {
+    deck.push({ id: id++, type: 'wild', colors: [c1, c2], value: v });
+  });
+  deck.push({ id: id++, type: 'wild', colors: Object.keys(COLORS), value: 0, rainbow: true });
+  deck.push({ id: id++, type: 'wild', colors: Object.keys(COLORS), value: 0, rainbow: true });
+
+  // Money
+  [[1, 6], [2, 5], [3, 3], [4, 3], [5, 2], [10, 1]].forEach(([v, c]) => {
+    for (let i = 0; i < c; i++) deck.push({ id: id++, type: 'money', value: v });
+  });
+
+  // Actions
+  [['passGo', 'Pass Go', 'Draw 2 cards', 1, 10], ['dealBreaker', 'Deal Breaker', 'Steal complete set', 5, 2], ['justSayNo', 'Just Say No', 'Block any action', 4, 3], ['slyDeal', 'Sly Deal', 'Steal a property', 3, 3], ['forcedDeal', 'Forced Deal', 'Swap properties', 3, 4], ['debtCollector', 'Debt Collector', 'Collect $5M', 3, 3], ['birthday', "It's My Birthday", 'All pay $2M', 2, 3], ['house', 'House', '+$3M rent', 3, 3], ['hotel', 'Hotel', '+$4M rent', 4, 2], ['doubleRent', 'Double Rent', '2x rent amount', 1, 2]].forEach(([action, name, desc, value, count]) => {
+    for (let i = 0; i < count; i++) deck.push({ id: id++, type: 'action', action, name, desc, value });
+  });
+
+  // Rent cards
+  [['brown', 'lightBlue'], ['pink', 'orange'], ['red', 'yellow'], ['green', 'blue'], ['railroad', 'utility']].forEach(colors => {
+    for (let i = 0; i < 2; i++) deck.push({ id: id++, type: 'rent', colors, value: 1 });
+  });
+  for (let i = 0; i < 3; i++) deck.push({ id: id++, type: 'rent', colors: Object.keys(COLORS), value: 3, wild: true });
+
+  return shuffle(deck);
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// UI Functions
+function addPlayer() {
+  const inputs = document.getElementById('player-inputs');
+  const count = inputs.children.length;
+  if (count >= 5) return;
+  const div = document.createElement('div');
+  div.className = 'player-input';
+  div.innerHTML = `<div class="player-number">${count + 1}</div><input type="text" placeholder="Player ${count + 1} name" maxlength="15"><button class="btn btn-secondary" onclick="this.parentElement.remove()" style="padding:8px 12px">×</button>`;
+  inputs.appendChild(div);
+  if (count + 1 >= 5) document.getElementById('add-btn').style.display = 'none';
+}
+
+function startGame() {
+  const inputs = document.querySelectorAll('#player-inputs input');
+  const names = Array.from(inputs).map((inp, i) => inp.value.trim() || `Player ${i + 1}`);
+  if (names.length < 2) return alert('Need at least 2 players');
+
+  game.deck = createDeck();
+  game.players = names.map((name, i) => ({
+    name, avatar: AVATARS[i % AVATARS.length],
+    hand: game.deck.splice(0, 5), bank: [], properties: {}
+  }));
+  game.currentPlayer = 0;
+  game.phase = 'draw';
+  game.actions = 3;
+  game.selectedCard = null;
+
+  document.getElementById('setup-screen').classList.add('hidden');
+  document.getElementById('game-screen').classList.remove('hidden');
+  render();
+}
+
+function render() {
+  const p = game.players[game.currentPlayer];
+
+  // Header
+  document.getElementById('current-avatar').textContent = p.avatar;
+  document.getElementById('current-name').textContent = p.name;
+  document.getElementById('deck-count').textContent = game.deck.length;
+  document.getElementById('deck-display').textContent = game.deck.length + ' cards';
+  document.getElementById('action-dots').innerHTML = [1,2,3].map(i => `<div class="action-dot ${i > game.actions ? 'used' : ''}"></div>`).join('');
+
+  // Opponents
+  const opponentsHtml = game.players.filter((_, i) => i !== game.currentPlayer).map(pl => renderPlayerBoard(pl, true)).join('');
+  document.getElementById('opponents-area').innerHTML = opponentsHtml;
+
+  // Current player board
+  document.getElementById('current-player-board').innerHTML = renderPlayerBoard(p, false);
+
+  // Hand
+  document.getElementById('hand-count').textContent = p.hand.length + ' cards';
+  document.getElementById('hand-cards').innerHTML = p.hand.map(card => renderCard(card, game.selectedCard?.id === card.id)).join('');
+
+  // Actions
+  let btns = '';
+  if (game.phase === 'draw') {
+    btns = '<button class="btn btn-primary" onclick="drawCards()">📥 Draw 2 Cards</button>';
+    document.getElementById('message').textContent = `${p.name}'s turn - Draw 2 cards!`;
+  } else if (game.phase === 'play') {
+    btns = `
+      <button class="btn btn-primary" onclick="playCard()" ${!game.selectedCard ? 'disabled' : ''}>▶️ Play Card</button>
+      <button class="btn btn-gold" onclick="bankCard()" ${!game.selectedCard || !['money','action','rent'].includes(game.selectedCard.type) ? 'disabled' : ''}>💰 Bank Card</button>
+      <button class="btn btn-secondary" onclick="endTurn()">⏭️ End Turn</button>
+    `;
+    document.getElementById('message').textContent = `${p.name}'s turn - ${game.actions} actions left`;
+  } else if (game.phase === 'discard') {
+    btns = '<span style="color:#FFD700">Click cards to discard (max 7 in hand)</span>';
+    document.getElementById('message').textContent = `${p.name} must discard to 7 cards`;
+  }
+  document.getElementById('action-buttons').innerHTML = btns;
+
+  // Check winner
+  const completeSets = Object.values(p.properties).filter(set => set.length >= COLORS[Object.keys(p.properties).find(c => p.properties[c] === set)]?.size).length;
+  if (completeSets >= 3) {
+    document.getElementById('winner-name').textContent = `${p.avatar} ${p.name}`;
+    document.getElementById('winner-screen').classList.remove('hidden');
+  }
+}
+
+function renderPlayerBoard(player, isOpponent) {
+  const bankTotal = player.bank.reduce((s, c) => s + c.value, 0);
+  const completeSets = Object.entries(player.properties).filter(([c, cards]) => cards.length >= COLORS[c].size).length;
+
+  let propsHtml = '';
+  for (const [color, cards] of Object.entries(player.properties)) {
+    const info = COLORS[color];
+    const isComplete = cards.length >= info.size;
+    propsHtml += `<div class="property-set ${isComplete ? 'complete' : ''}">
+      <div class="set-header">${Array(info.size).fill(0).map((_, i) => `<div class="set-dot ${i < cards.length ? 'filled' : ''}" style="background:${i < cards.length ? info.bg : ''}"></div>`).join('')}</div>
+      <div class="mini-cards">${cards.map(c => `<div class="mini-card"><div class="mini-color" style="background:${info.bg}"></div><div class="mini-body"><span class="mini-value">$${c.value}M</span></div></div>`).join('')}</div>
+    </div>`;
+  }
+
+  return `<div class="player-board ${isOpponent ? 'opponent' : 'current'}">
+    <div class="player-header">
+      <div class="player-name"><span class="player-avatar">${player.avatar}</span><span>${player.name}</span>${!isOpponent ? '⭐' : ''}</div>
+      <div class="player-stats"><div class="stat">🃏 ${player.hand.length}</div><div class="stat">🏆 ${completeSets}/3</div></div>
+    </div>
+    <div class="player-properties">${propsHtml || '<span style="color:rgba(255,255,255,0.4);font-size:0.8rem">No properties</span>'}</div>
+    <div class="player-bank">${player.bank.map(c => `<div class="bank-card">$${c.value}M</div>`).join('') || '<span style="color:rgba(255,255,255,0.4);font-size:0.7rem">Empty</span>'}</div>
+    <div class="bank-total">💵 Bank: $${bankTotal}M</div>
+  </div>`;
+}
+
+function renderCard(card, selected) {
+  const sel = selected ? 'selected' : '';
+  if (card.type === 'property') {
+    const info = COLORS[card.color];
+    return `<div class="card property ${sel}" onclick="selectCard(${card.id})">
+      <div class="card-color-bar" style="background:${info.bg}"><span class="card-name">${card.name}</span></div>
+      <div class="card-body"><div class="rent-info">${info.rents.map((r, i) => `${i+1}/${info.size}: $${r}M`).join('<br>')}</div></div>
+      <div class="card-value">$${card.value}M</div>
+    </div>`;
+  } else if (card.type === 'money') {
+    return `<div class="card money ${sel}" onclick="selectCard(${card.id})"><div class="money-value">$${card.value}M</div><div class="money-label">Million</div></div>`;
+  } else if (card.type === 'action') {
+    return `<div class="card action ${sel}" onclick="selectCard(${card.id})">
+      <div class="action-header"><span class="action-title">${card.name}</span></div>
+      <div class="action-icon">${ACTION_ICONS[card.action] || '⚡'}</div>
+      <div class="action-desc">${card.desc}</div>
+      <div class="card-value">$${card.value}M</div>
+    </div>`;
+  } else if (card.type === 'rent') {
+    const colors = card.wild ? '🌈' : card.colors.map(c => `<div class="rent-block" style="background:${COLORS[c].bg}"></div>`).join('');
+    return `<div class="card rent ${sel}" onclick="selectCard(${card.id})">
+      <div class="rent-title">RENT</div>
+      <div class="rent-colors">${card.wild ? '<span style="font-size:2rem">🌈💰</span>' : colors}</div>
+      <div class="card-value">$${card.value}M</div>
+    </div>`;
+  } else if (card.type === 'wild') {
+    return `<div class="card wild ${card.rainbow ? 'rainbow' : ''} ${sel}" onclick="selectCard(${card.id})">
+      <div class="wild-title">${card.rainbow ? 'Any Color' : 'Wild Card'}</div>
+      <div class="wild-colors">${card.rainbow ? '<span style="font-size:2rem">🌈</span>' : card.colors.map(c => `<div class="wild-dot" style="background:${COLORS[c].bg}"></div>`).join('')}</div>
+      <div class="card-value">$${card.value}M</div>
+    </div>`;
+  }
+  return '';
+}
+
+function selectCard(id) {
+  const p = game.players[game.currentPlayer];
+  const card = p.hand.find(c => c.id === id);
+  if (!card) return;
+
+  if (game.phase === 'discard') {
+    p.hand = p.hand.filter(c => c.id !== id);
+    if (p.hand.length <= 7) nextTurn();
+    else render();
+    return;
+  }
+
+  game.selectedCard = game.selectedCard?.id === id ? null : card;
+  render();
+}
+
+function drawCards() {
+  if (game.phase !== 'draw') return;
+  const p = game.players[game.currentPlayer];
+  for (let i = 0; i < 2 && game.deck.length > 0; i++) {
+    p.hand.push(game.deck.pop());
+  }
+  game.phase = 'play';
+  game.actions = 3;
+  render();
+}
+
+function playCard() {
+  if (!game.selectedCard || game.actions <= 0) return;
+  const p = game.players[game.currentPlayer];
+  const card = game.selectedCard;
+
+  if (card.type === 'wild') {
+    showColorPicker(card.colors);
+    return;
+  }
+
+  if (card.type === 'property') {
+    if (!p.properties[card.color]) p.properties[card.color] = [];
+    p.properties[card.color].push(card);
+  } else if (card.type === 'money' || card.type === 'rent') {
+    p.bank.push(card);
+  } else if (card.type === 'action') {
+    if (card.action === 'passGo') {
+      for (let i = 0; i < 2 && game.deck.length > 0; i++) p.hand.push(game.deck.pop());
+    }
+    p.bank.push(card);
+  }
+
+  p.hand = p.hand.filter(c => c.id !== card.id);
+  game.selectedCard = null;
+  game.actions--;
+
+  if (game.actions <= 0) checkEndTurn();
+  else render();
+}
+
+function bankCard() {
+  if (!game.selectedCard || game.actions <= 0) return;
+  const p = game.players[game.currentPlayer];
+  const card = game.selectedCard;
+
+  if (!['money', 'action', 'rent'].includes(card.type)) return;
+
+  p.bank.push(card);
+  p.hand = p.hand.filter(c => c.id !== card.id);
+  game.selectedCard = null;
+  game.actions--;
+
+  if (game.actions <= 0) checkEndTurn();
+  else render();
+}
+
+function showColorPicker(colors) {
+  const picker = document.getElementById('color-picker');
+  picker.innerHTML = colors.map(c => `<div class="color-option" style="background:${COLORS[c].bg}" onclick="selectColor('${c}')"></div>`).join('');
+  document.getElementById('color-modal').classList.remove('hidden');
+}
+
+function closeColorModal() {
+  document.getElementById('color-modal').classList.add('hidden');
+  game.selectedCard = null;
+  render();
+}
+
+function selectColor(color) {
+  const p = game.players[game.currentPlayer];
+  const card = game.selectedCard;
+
+  if (!p.properties[color]) p.properties[color] = [];
+  p.properties[color].push({ ...card, color });
+  p.hand = p.hand.filter(c => c.id !== card.id);
+  game.selectedCard = null;
+  game.actions--;
+
+  closeColorModal();
+  if (game.actions <= 0) checkEndTurn();
+  else render();
+}
+
+function checkEndTurn() {
+  const p = game.players[game.currentPlayer];
+  if (p.hand.length > 7) {
+    game.phase = 'discard';
+    render();
+  } else {
+    nextTurn();
+  }
+}
+
+function endTurn() {
+  checkEndTurn();
+}
+
+function nextTurn() {
+  game.currentPlayer = (game.currentPlayer + 1) % game.players.length;
+  game.phase = 'draw';
+  game.actions = 3;
+  game.selectedCard = null;
+  render();
+}
+
+function resetGame() {
+  document.getElementById('winner-screen').classList.add('hidden');
+  document.getElementById('game-screen').classList.add('hidden');
+  document.getElementById('setup-screen').classList.remove('hidden');
+  game = { players: [], currentPlayer: 0, deck: [], phase: 'setup', actions: 3, selectedCard: null };
+}
+</script>
+</body>
 </html>
