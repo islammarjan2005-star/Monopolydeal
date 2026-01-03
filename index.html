@@ -3,33 +3,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Monopoly Deal - Card Game</title>
+  <title>Monopoly Deal - Premium Edition</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎩</text></svg>">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     :root {
       --monopoly-red: #ED1B24;
       --monopoly-green: #1FB25A;
       --monopoly-gold: #FFD700;
-      --color-brown: #8B4513;
-      --color-light-blue: #87CEEB;
-      --color-pink: #FF69B4;
-      --color-orange: #FF8C00;
-      --color-red: #DC143C;
-      --color-yellow: #FFD700;
-      --color-green: #228B22;
-      --color-blue: #0000CD;
-      --color-railroad: #2F2F2F;
-      --color-utility: #90EE90;
+      --glow-gold: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4);
+      --glow-green: 0 0 30px rgba(31, 178, 90, 0.8), 0 0 60px rgba(31, 178, 90, 0.4);
+      --glass: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.2);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
       font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      background: #0a0a1a;
       min-height: 100vh;
       color: white;
+      overflow-x: hidden;
     }
+
+    #three-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+    }
+
     .hidden { display: none !important; }
+
+    /* Glassmorphism */
+    .glass {
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Premium Animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(2deg); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.9; }
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(255,215,0,0.5), 0 0 40px rgba(255,215,0,0.3); }
+      50% { box-shadow: 0 0 40px rgba(255,215,0,0.8), 0 0 80px rgba(255,215,0,0.5); }
+    }
+    @keyframes cardDeal {
+      0% { transform: translateY(-100vh) rotateX(180deg) scale(0.5); opacity: 0; }
+      60% { transform: translateY(20px) rotateX(0deg) scale(1.1); opacity: 1; }
+      100% { transform: translateY(0) rotateX(0deg) scale(1); opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes rotateIn {
+      from { transform: rotateY(90deg) scale(0.5); opacity: 0; }
+      to { transform: rotateY(0) scale(1); opacity: 1; }
+    }
+    @keyframes ripple {
+      0% { transform: scale(0); opacity: 1; }
+      100% { transform: scale(4); opacity: 0; }
+    }
+    @keyframes confetti {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
 
     /* Setup Screen */
     .setup-screen {
@@ -37,355 +99,948 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 20px;
     }
+
     .setup-container {
-      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-      border-radius: 20px;
-      padding: 40px;
-      max-width: 500px;
-      width: 90%;
+      border-radius: 30px;
+      padding: 50px;
+      max-width: 550px;
+      width: 100%;
       border: 2px solid var(--monopoly-gold);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      animation: slideUp 1s cubic-bezier(0.16, 1, 0.3, 1), glow 3s ease-in-out infinite;
+      position: relative;
+      overflow: hidden;
     }
-    .setup-title { text-align: center; margin-bottom: 30px; }
+
+    .setup-container::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent 30%, rgba(255,215,0,0.1) 50%, transparent 70%);
+      animation: shimmer 3s linear infinite;
+    }
+
+    .setup-title { text-align: center; margin-bottom: 40px; position: relative; }
     .setup-title h1 {
-      font-size: 3rem;
-      background: linear-gradient(180deg, #fff, var(--monopoly-gold));
+      font-size: 4rem;
+      font-weight: 900;
+      background: linear-gradient(180deg, #fff 0%, var(--monopoly-gold) 50%, #FFA500 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       text-transform: uppercase;
-      letter-spacing: 4px;
+      letter-spacing: 6px;
+      text-shadow: 0 0 60px rgba(255,215,0,0.5);
+      animation: pulse 2s ease-in-out infinite;
     }
-    .setup-title p { color: rgba(255,255,255,0.7); margin-top: 5px; }
-    .player-inputs { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; }
-    .player-input { display: flex; align-items: center; gap: 15px; }
+    .setup-title p {
+      color: rgba(255,255,255,0.8);
+      margin-top: 10px;
+      font-size: 1.2rem;
+      letter-spacing: 8px;
+      text-transform: uppercase;
+    }
+
+    .player-inputs { display: flex; flex-direction: column; gap: 20px; margin-bottom: 30px; position: relative; }
+    .player-input {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      animation: slideUp 0.5s ease forwards;
+      opacity: 0;
+    }
+    .player-input:nth-child(1) { animation-delay: 0.2s; }
+    .player-input:nth-child(2) { animation-delay: 0.3s; }
+    .player-input:nth-child(3) { animation-delay: 0.4s; }
+    .player-input:nth-child(4) { animation-delay: 0.5s; }
+    .player-input:nth-child(5) { animation-delay: 0.6s; }
+
     .player-number {
-      width: 40px; height: 40px;
-      background: var(--monopoly-red);
-      border-radius: 50%;
+      width: 50px; height: 50px;
+      background: linear-gradient(135deg, var(--monopoly-red) 0%, #8B0000 100%);
+      border-radius: 15px;
       display: flex; align-items: center; justify-content: center;
-      font-weight: bold; font-size: 1.2rem;
+      font-weight: 800; font-size: 1.4rem;
+      box-shadow: 0 4px 20px rgba(237, 27, 36, 0.4);
+      transition: all 0.3s ease;
     }
+    .player-number:hover {
+      transform: scale(1.1) rotate(5deg);
+      box-shadow: 0 8px 30px rgba(237, 27, 36, 0.6);
+    }
+
     .player-input input {
-      flex: 1; padding: 12px 20px;
+      flex: 1; padding: 18px 25px;
       border: 2px solid rgba(255,255,255,0.2);
-      border-radius: 25px;
-      background: rgba(255,255,255,0.1);
-      color: white; font-size: 1rem; outline: none;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.05);
+      color: white; font-size: 1.1rem; outline: none;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
     }
-    .player-input input:focus { border-color: var(--monopoly-gold); }
+    .player-input input:focus {
+      border-color: var(--monopoly-gold);
+      box-shadow: 0 0 30px rgba(255,215,0,0.3);
+      transform: scale(1.02);
+    }
     .player-input input::placeholder { color: rgba(255,255,255,0.4); }
+
     .btn {
-      padding: 12px 25px; border: none; border-radius: 25px;
-      font-size: 1rem; font-weight: bold; cursor: pointer;
-      text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s;
+      padding: 18px 35px; border: none; border-radius: 25px;
+      font-size: 1.1rem; font-weight: 700; cursor: pointer;
+      text-transform: uppercase; letter-spacing: 2px;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
     }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 0; height: 0;
+      background: rgba(255,255,255,0.3);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: all 0.5s ease;
+    }
+    .btn:active::before {
+      width: 300px; height: 300px;
+      opacity: 0;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
     .btn-primary {
-      background: linear-gradient(135deg, var(--monopoly-green), #158f43);
-      color: white; box-shadow: 0 4px 15px rgba(31,178,90,0.4);
+      background: linear-gradient(135deg, var(--monopoly-green) 0%, #0d7a3a 100%);
+      color: white;
+      box-shadow: 0 8px 30px rgba(31,178,90,0.5);
     }
-    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); }
-    .btn-secondary { background: linear-gradient(135deg, #6c757d, #495057); color: white; }
-    .btn-gold { background: linear-gradient(135deg, var(--monopoly-gold), #FFA500); color: #333; }
-    .start-btn { width: 100%; padding: 15px; font-size: 1.2rem; }
-    .how-to-play { margin-top: 30px; text-align: center; }
-    .how-to-play h3 { color: var(--monopoly-gold); margin-bottom: 15px; }
-    .how-to-play p { font-size: 0.85rem; color: rgba(255,255,255,0.7); line-height: 1.8; }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 15px 40px rgba(31,178,90,0.7);
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.1) 100%);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    .btn-secondary:hover {
+      background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.2) 100%);
+      transform: translateY(-3px);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--monopoly-gold) 0%, #FFA500 100%);
+      color: #1a1a1a;
+      box-shadow: 0 8px 30px rgba(255,215,0,0.5);
+    }
+    .btn-gold:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 15px 40px rgba(255,215,0,0.7);
+    }
+
+    .start-btn {
+      width: 100%;
+      padding: 22px;
+      font-size: 1.4rem;
+      animation: slideUp 0.8s ease forwards;
+      animation-delay: 0.5s;
+      opacity: 0;
+    }
+
+    .how-to-play {
+      margin-top: 40px;
+      text-align: center;
+      animation: slideUp 0.8s ease forwards;
+      animation-delay: 0.7s;
+      opacity: 0;
+    }
+    .how-to-play h3 {
+      color: var(--monopoly-gold);
+      margin-bottom: 20px;
+      font-size: 1.3rem;
+      letter-spacing: 3px;
+    }
+    .how-to-play p {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.7);
+      line-height: 2;
+    }
 
     /* Game Screen */
-    .game-container { display: flex; flex-direction: column; min-height: 100vh; padding: 10px; }
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 15px;
+    }
+
     .game-header {
-      background: linear-gradient(180deg, var(--monopoly-red), #b81820);
-      border-radius: 15px; padding: 15px 30px; margin-bottom: 15px;
-      display: flex; justify-content: space-between; align-items: center;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.4); border: 3px solid var(--monopoly-gold);
-      flex-wrap: wrap; gap: 10px;
+      background: linear-gradient(135deg, rgba(237,27,36,0.9) 0%, rgba(139,0,0,0.9) 100%);
+      border-radius: 20px;
+      padding: 20px 35px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 2px solid var(--monopoly-gold);
+      flex-wrap: wrap;
+      gap: 15px;
+      animation: slideUp 0.5s ease, glow 4s ease-in-out infinite;
+      backdrop-filter: blur(20px);
     }
+
     .game-title {
-      font-size: 1.8rem; font-weight: bold; text-transform: uppercase; letter-spacing: 3px;
-      background: linear-gradient(180deg, #fff, #ffd700);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      font-size: 2.2rem;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      background: linear-gradient(180deg, #fff 0%, var(--monopoly-gold) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .game-info { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+
+    .game-info { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+
     .turn-indicator {
-      background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 20px;
-      font-weight: bold; display: flex; align-items: center; gap: 8px;
+      background: rgba(0,0,0,0.4);
+      padding: 12px 24px;
+      border-radius: 30px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
     }
-    .actions-dots { display: flex; gap: 4px; }
+
+    .actions-dots { display: flex; gap: 8px; }
     .action-dot {
-      width: 10px; height: 10px; border-radius: 50%;
-      background: var(--monopoly-gold); transition: all 0.3s;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: var(--monopoly-gold);
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 0 10px rgba(255,215,0,0.5);
     }
-    .action-dot.used { background: rgba(255,255,255,0.2); }
-    .deck-info { display: flex; gap: 10px; }
-    .deck-count { background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 15px; font-size: 0.85rem; }
+    .action-dot.used {
+      background: rgba(255,255,255,0.2);
+      box-shadow: none;
+      transform: scale(0.7);
+    }
+
+    .deck-count {
+      background: rgba(0,0,0,0.4);
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 0.95rem;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
 
     .message-banner {
-      background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,165,0,0.2));
-      border: 2px solid var(--monopoly-gold); border-radius: 10px;
-      padding: 12px 25px; margin: 10px 0; text-align: center;
-      font-size: 1.1rem; font-weight: 500;
+      background: linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(255,165,0,0.15) 100%);
+      border: 2px solid var(--monopoly-gold);
+      border-radius: 20px;
+      padding: 18px 30px;
+      margin: 15px 0;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 600;
+      backdrop-filter: blur(20px);
+      animation: slideUp 0.5s ease;
+      box-shadow: 0 0 30px rgba(255,215,0,0.2);
     }
 
-    .game-board { flex: 1; display: flex; flex-direction: column; gap: 15px; }
-    .opponents-area { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
-    .center-area { display: flex; gap: 20px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
+    .game-board { flex: 1; display: flex; flex-direction: column; gap: 20px; }
+    .opponents-area { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+    .center-area { display: flex; gap: 30px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
 
-    /* Player Board */
+    /* Player Board - Premium */
     .player-board {
-      background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-      border-radius: 15px; padding: 15px; border: 2px solid rgba(255,255,255,0.2);
-      min-width: 280px; max-width: 350px;
+      border-radius: 25px;
+      padding: 20px;
+      min-width: 300px;
+      max-width: 380px;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: rotateIn 0.6s ease;
     }
-    .player-board.current { border-color: var(--monopoly-gold); box-shadow: 0 0 20px rgba(255,215,0,0.6); }
-    .player-board.opponent { transform: scale(0.85); opacity: 0.9; }
+    .player-board:hover {
+      transform: translateY(-5px) scale(1.02);
+    }
+    .player-board.current {
+      border: 2px solid var(--monopoly-gold);
+      box-shadow: var(--glow-gold);
+    }
+    .player-board.opponent {
+      transform: scale(0.88);
+      opacity: 0.9;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .player-board.opponent:hover {
+      transform: scale(0.92);
+      opacity: 1;
+    }
+
     .player-header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 12px; padding-bottom: 10px; border-bottom: 2px solid rgba(255,255,255,0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid rgba(255,255,255,0.15);
     }
-    .player-name { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: bold; }
-    .player-avatar { font-size: 1.6rem; }
-    .player-stats { display: flex; gap: 10px; font-size: 0.85rem; }
-    .stat { background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 10px; }
-    .player-properties { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; min-height: 50px; }
-    .property-set { display: flex; flex-direction: column; gap: 2px; padding: 5px; background: rgba(0,0,0,0.2); border-radius: 8px; }
-    .property-set.complete { border: 2px solid var(--monopoly-gold); box-shadow: 0 0 10px rgba(255,215,0,0.4); }
-    .set-header { display: flex; gap: 3px; margin-bottom: 3px; }
-    .set-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.3); }
-    .set-dot.filled { background: var(--monopoly-gold); }
-    .mini-cards { display: flex; gap: 2px; }
+    .player-name {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+    .player-avatar {
+      font-size: 2rem;
+      filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
+    }
+    .player-stats { display: flex; gap: 12px; font-size: 0.9rem; }
+    .stat {
+      background: rgba(0,0,0,0.3);
+      padding: 6px 14px;
+      border-radius: 15px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .player-properties {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+      min-height: 60px;
+    }
+
+    .property-set {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .property-set:hover {
+      transform: scale(1.05);
+      background: rgba(0,0,0,0.4);
+    }
+    .property-set.complete {
+      border: 2px solid var(--monopoly-gold);
+      box-shadow: 0 0 20px rgba(255,215,0,0.4);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .set-header { display: flex; gap: 4px; margin-bottom: 4px; }
+    .set-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.2);
+      transition: all 0.3s ease;
+    }
+    .set-dot.filled {
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    .mini-cards { display: flex; gap: 3px; }
     .mini-card {
-      width: 30px; height: 42px; border-radius: 4px;
-      display: flex; flex-direction: column; overflow: hidden;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      width: 32px; height: 45px;
+      border-radius: 6px;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+      transition: all 0.3s ease;
+    }
+    .mini-card:hover {
+      transform: translateY(-3px) scale(1.1);
     }
     .mini-color { height: 40%; }
     .mini-body { height: 60%; background: white; display: flex; align-items: center; justify-content: center; }
     .mini-value { font-size: 0.5rem; font-weight: bold; color: #333; }
+
     .player-bank {
-      display: flex; flex-wrap: wrap; gap: 4px; padding: 8px;
-      background: rgba(0,0,0,0.2); border-radius: 8px; min-height: 35px;
+      display: flex; flex-wrap: wrap; gap: 5px; padding: 10px;
+      background: rgba(0,0,0,0.3); border-radius: 12px; min-height: 40px;
+      border: 1px solid rgba(255,255,255,0.1);
     }
     .bank-card {
-      width: 28px; height: 36px; border-radius: 4px;
+      width: 30px; height: 40px; border-radius: 6px;
       display: flex; align-items: center; justify-content: center;
       font-size: 0.6rem; font-weight: bold;
-      background: linear-gradient(135deg, #90EE90, #228B22);
-      color: white; text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+      background: linear-gradient(135deg, #90EE90 0%, #228B22 100%);
+      color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      box-shadow: 0 3px 10px rgba(34,139,34,0.4);
+      transition: all 0.3s ease;
     }
-    .bank-total { font-size: 0.8rem; color: var(--monopoly-gold); margin-top: 5px; }
+    .bank-card:hover {
+      transform: translateY(-3px) scale(1.1);
+    }
+    .bank-total { font-size: 0.9rem; color: var(--monopoly-gold); margin-top: 8px; font-weight: 600; }
 
-    /* Deck Area */
-    .deck-area { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    /* Deck - Premium 3D */
+    .deck-area { display: flex; flex-direction: column; align-items: center; gap: 15px; }
     .deck {
-      width: 100px; height: 140px; border-radius: 8px;
-      background: linear-gradient(135deg, var(--monopoly-red), #8B0000);
-      border: 3px solid var(--monopoly-gold); cursor: pointer;
+      width: 110px; height: 155px; border-radius: 15px;
+      background: linear-gradient(135deg, var(--monopoly-red) 0%, #6B0000 100%);
+      border: 3px solid var(--monopoly-gold);
+      cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      flex-direction: column; transition: all 0.2s;
+      flex-direction: column;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 2px 20px rgba(255,255,255,0.1);
+      position: relative;
+      transform-style: preserve-3d;
+      perspective: 1000px;
     }
-    .deck:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255,215,0,0.6); }
-    .deck-label { font-size: 0.8rem; color: var(--monopoly-gold); text-transform: uppercase; font-weight: bold; }
-    .deck-num { font-size: 0.7rem; margin-top: 5px; }
+    .deck::before {
+      content: '';
+      position: absolute;
+      top: 5px; left: 5px; right: -5px; bottom: -5px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 15px;
+      z-index: -1;
+    }
+    .deck::after {
+      content: '';
+      position: absolute;
+      top: 10px; left: 10px; right: -10px; bottom: -10px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 15px;
+      z-index: -2;
+    }
+    .deck:hover {
+      transform: translateY(-10px) rotateX(10deg) scale(1.05);
+      box-shadow: var(--glow-gold), 0 20px 60px rgba(0,0,0,0.6);
+    }
+    .deck-label {
+      font-size: 0.9rem;
+      color: var(--monopoly-gold);
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+    .deck-num { font-size: 0.8rem; margin-top: 8px; opacity: 0.9; }
 
-    /* Hand Area */
+    /* Hand Area - Premium */
     .hand-area {
-      background: rgba(0,0,0,0.3); border-radius: 15px; padding: 15px;
-      border: 2px solid rgba(255,255,255,0.2); margin-top: auto;
+      border-radius: 25px;
+      padding: 20px;
+      margin-top: auto;
+      animation: slideUp 0.5s ease;
     }
-    .hand-label { font-size: 0.9rem; margin-bottom: 10px; color: rgba(255,255,255,0.7); display: flex; justify-content: space-between; }
-    .hand-cards { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; min-height: 140px; }
+    .hand-label {
+      font-size: 1rem;
+      margin-bottom: 15px;
+      color: rgba(255,255,255,0.8);
+      display: flex;
+      justify-content: space-between;
+      font-weight: 600;
+    }
+    .hand-cards {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      min-height: 160px;
+      perspective: 1000px;
+    }
 
-    /* Cards */
+    /* Cards - Premium 3D */
     .card {
-      width: 90px; height: 130px; border-radius: 8px;
-      cursor: pointer; transition: all 0.2s;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.3); position: relative; overflow: hidden;
+      width: 100px; height: 145px;
+      border-radius: 12px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4);
     }
-    .card:hover { transform: translateY(-10px) scale(1.05); box-shadow: 0 8px 16px rgba(0,0,0,0.4); z-index: 10; }
-    .card.selected { transform: translateY(-20px); box-shadow: 0 0 20px var(--monopoly-gold); }
+    .card:hover {
+      transform: translateY(-20px) rotateX(10deg) scale(1.08);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      z-index: 10;
+    }
+    .card.selected {
+      transform: translateY(-30px) rotateX(5deg) scale(1.1);
+      box-shadow: var(--glow-gold);
+      animation: pulse 1s ease-in-out infinite;
+    }
+    .card.dealing {
+      animation: cardDeal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
 
     .card.property { background: white; display: flex; flex-direction: column; }
-    .card-color-bar { height: 35%; display: flex; align-items: center; justify-content: center; padding: 3px; }
-    .card-name { font-size: 0.5rem; font-weight: bold; text-transform: uppercase; color: white; text-shadow: 1px 1px 1px rgba(0,0,0,0.5); text-align: center; line-height: 1.2; }
-    .card-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5px; color: #333; }
-    .rent-info { font-size: 0.45rem; text-align: center; line-height: 1.4; }
+    .card-color-bar {
+      height: 38%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px;
+      position: relative;
+    }
+    .card-color-bar::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 50%);
+    }
+    .card-name {
+      font-size: 0.55rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: white;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+      text-align: center;
+      line-height: 1.3;
+      position: relative;
+      z-index: 1;
+    }
+    .card-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      color: #333;
+      background: linear-gradient(180deg, #fff 0%, #f5f5f5 100%);
+    }
+    .rent-info { font-size: 0.5rem; text-align: center; line-height: 1.5; font-weight: 500; }
     .card-value {
-      position: absolute; bottom: 5px; left: 5px;
-      background: var(--monopoly-green); color: white; border-radius: 50%;
-      width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
-      font-size: 0.6rem; font-weight: bold;
+      position: absolute; bottom: 6px; left: 6px;
+      background: linear-gradient(135deg, var(--monopoly-green) 0%, #0d7a3a 100%);
+      color: white; border-radius: 50%;
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.6rem; font-weight: 800;
+      box-shadow: 0 3px 10px rgba(31,178,90,0.5);
     }
 
     .card.money {
-      background: linear-gradient(135deg, #90EE90, #228B22);
+      background: linear-gradient(135deg, #7CFC00 0%, #228B22 50%, #006400 100%);
       display: flex; align-items: center; justify-content: center;
-      border: 3px solid #1a5c1a; flex-direction: column;
+      border: 4px solid #1a5c1a;
+      flex-direction: column;
     }
-    .money-value { font-size: 2rem; font-weight: bold; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
-    .money-label { font-size: 0.6rem; color: white; text-transform: uppercase; }
+    .card.money::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%);
+    }
+    .money-value {
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: white;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .money-label {
+      font-size: 0.65rem;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      position: relative;
+    }
 
     .card.action {
-      background: linear-gradient(135deg, #FFD700, #FFA500);
-      border: 3px solid #cc8800; padding: 8px; display: flex; flex-direction: column;
+      background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF8C00 100%);
+      border: 4px solid #cc8800;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
     }
-    .action-header { background: rgba(0,0,0,0.2); padding: 4px; border-radius: 4px; text-align: center; margin-bottom: 4px; }
-    .action-title { font-size: 0.55rem; font-weight: bold; color: #333; text-transform: uppercase; }
-    .action-icon { font-size: 1.4rem; text-align: center; margin: 4px 0; }
-    .action-desc { font-size: 0.4rem; color: #333; text-align: center; line-height: 1.3; flex: 1; }
+    .card.action::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%);
+    }
+    .action-header {
+      background: rgba(0,0,0,0.15);
+      padding: 5px;
+      border-radius: 8px;
+      text-align: center;
+      margin-bottom: 5px;
+      position: relative;
+    }
+    .action-title { font-size: 0.6rem; font-weight: 800; color: #333; text-transform: uppercase; }
+    .action-icon { font-size: 1.8rem; text-align: center; margin: 6px 0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+    .action-desc { font-size: 0.45rem; color: #333; text-align: center; line-height: 1.4; flex: 1; font-weight: 500; }
 
     .card.rent {
-      background: linear-gradient(135deg, #FF6B6B, #EE5A5A);
-      border: 3px solid #cc4444; display: flex; flex-direction: column; padding: 5px;
+      background: linear-gradient(135deg, #FF6B6B 0%, #EE5A5A 50%, #DC143C 100%);
+      border: 4px solid #cc4444;
+      display: flex;
+      flex-direction: column;
+      padding: 8px;
     }
-    .rent-title { text-align: center; font-size: 0.8rem; font-weight: bold; color: white; text-transform: uppercase; margin-bottom: 5px; }
-    .rent-colors { display: flex; justify-content: center; gap: 5px; flex: 1; align-items: center; }
-    .rent-block { width: 25px; height: 25px; border-radius: 4px; border: 2px solid white; }
+    .rent-title {
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: white;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    }
+    .rent-colors { display: flex; justify-content: center; gap: 8px; flex: 1; align-items: center; }
+    .rent-block {
+      width: 28px; height: 28px;
+      border-radius: 6px;
+      border: 3px solid white;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+    }
 
     .card.wild {
-      background: linear-gradient(135deg, #3498DB, #2980B9);
-      border: 3px solid #1a5276; display: flex; flex-direction: column; padding: 5px;
+      background: linear-gradient(135deg, #3498DB 0%, #2980B9 50%, #1a5276 100%);
+      border: 4px solid #1a5276;
+      display: flex;
+      flex-direction: column;
+      padding: 8px;
     }
-    .wild-title { text-align: center; font-size: 0.65rem; font-weight: bold; color: white; text-transform: uppercase; }
-    .wild-colors { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; padding: 5px; flex: 1; align-content: center; }
-    .wild-dot { width: 14px; height: 14px; border-radius: 3px; border: 1px solid white; }
-    .card.wild.rainbow { background: linear-gradient(45deg, var(--color-brown), var(--color-light-blue), var(--color-pink), var(--color-orange), var(--color-red), var(--color-blue)); }
+    .wild-title {
+      text-align: center;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: white;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+    }
+    .wild-colors {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 4px;
+      padding: 6px;
+      flex: 1;
+      align-content: center;
+    }
+    .wild-dot {
+      width: 16px; height: 16px;
+      border-radius: 4px;
+      border: 2px solid white;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .card.wild.rainbow {
+      background: linear-gradient(45deg, #8B4513, #87CEEB, #FF69B4, #FF8C00, #DC143C, #0000CD);
+      background-size: 200% 200%;
+      animation: shimmer 3s linear infinite;
+    }
 
     /* Action Buttons */
-    .action-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 15px; flex-wrap: wrap; }
+    .action-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
 
-    /* Modal */
+    /* Modal - Premium */
     .modal-overlay {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000;
+      background: rgba(0,0,0,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
     }
     .modal {
-      background: linear-gradient(135deg, #2a2a4e, #1a1a2e);
-      border-radius: 20px; padding: 30px; max-width: 400px; width: 90%;
+      border-radius: 30px;
+      padding: 40px;
+      max-width: 450px;
+      width: 90%;
       border: 2px solid var(--monopoly-gold);
+      animation: rotateIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--glow-gold);
     }
-    .modal-title { font-size: 1.5rem; text-align: center; margin-bottom: 20px; color: var(--monopoly-gold); }
-    .color-picker { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; padding: 15px; }
+    .modal-title {
+      font-size: 1.8rem;
+      text-align: center;
+      margin-bottom: 25px;
+      color: var(--monopoly-gold);
+      font-weight: 800;
+    }
+    .color-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      padding: 20px;
+    }
     .color-option {
-      width: 50px; height: 50px; border-radius: 10px; cursor: pointer;
-      border: 3px solid transparent; transition: all 0.2s;
+      width: 60px; height: 60px;
+      border-radius: 15px;
+      cursor: pointer;
+      border: 4px solid transparent;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
     }
-    .color-option:hover { transform: scale(1.1); border-color: white; }
-    .modal-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 20px; }
+    .color-option:hover {
+      transform: scale(1.15) rotate(5deg);
+      border-color: white;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    .modal-buttons { display: flex; gap: 20px; justify-content: center; margin-top: 25px; }
 
-    /* Winner Screen */
+    /* Winner Screen - Premium */
     .winner-screen {
       position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 2000;
+      background: radial-gradient(circle at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.95) 100%);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 2000;
+      backdrop-filter: blur(20px);
     }
-    .winner-content { text-align: center; }
-    .winner-trophy { font-size: 8rem; margin-bottom: 20px; animation: float 2s ease-in-out infinite; }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-    .winner-title { font-size: 3rem; background: linear-gradient(180deg, var(--monopoly-gold), #FFA500); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 10px; }
-    .winner-name { font-size: 2rem; color: white; margin-bottom: 30px; }
+    .winner-content { text-align: center; animation: rotateIn 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+    .winner-trophy {
+      font-size: 10rem;
+      margin-bottom: 30px;
+      animation: float 2s ease-in-out infinite;
+      filter: drop-shadow(0 0 30px rgba(255,215,0,0.8));
+    }
+    .winner-title {
+      font-size: 4rem;
+      background: linear-gradient(180deg, var(--monopoly-gold) 0%, #FFA500 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 15px;
+      font-weight: 900;
+      text-shadow: 0 0 60px rgba(255,215,0,0.5);
+    }
+    .winner-name {
+      font-size: 2.5rem;
+      color: white;
+      margin-bottom: 40px;
+      font-weight: 600;
+    }
+
+    /* Confetti */
+    .confetti-piece {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      top: -20px;
+      animation: confetti 3s linear forwards;
+    }
 
     @media (max-width: 768px) {
-      .game-header { flex-direction: column; padding: 10px; }
-      .game-title { font-size: 1.4rem; }
+      .game-header { flex-direction: column; padding: 15px; }
+      .game-title { font-size: 1.6rem; }
+      .setup-title h1 { font-size: 2.5rem; }
       .player-board { min-width: 100%; max-width: 100%; }
       .player-board.opponent { transform: scale(1); }
-      .card { width: 70px; height: 100px; }
-      .hand-cards { min-height: 110px; }
+      .card { width: 80px; height: 115px; }
+      .hand-cards { min-height: 130px; }
     }
   </style>
 </head>
 <body>
-  <!-- Setup Screen -->
-  <div id="setup-screen" class="setup-screen">
-    <div class="setup-container">
-      <div class="setup-title">
-        <h1>Monopoly Deal</h1>
-        <p>The Card Game</p>
-      </div>
-      <div class="player-inputs" id="player-inputs">
-        <div class="player-input">
-          <div class="player-number">1</div>
-          <input type="text" placeholder="Player 1 name" maxlength="15">
-        </div>
-        <div class="player-input">
-          <div class="player-number">2</div>
-          <input type="text" placeholder="Player 2 name" maxlength="15">
-        </div>
-      </div>
-      <div style="text-align: center; margin-bottom: 20px;">
-        <button class="btn btn-secondary" onclick="addPlayer()" id="add-btn">+ Add Player</button>
-      </div>
-      <button class="btn btn-primary start-btn" onclick="startGame()">🎲 Start Game</button>
-      <div class="how-to-play">
-        <h3>How to Play</h3>
-        <p>🎯 Goal: Be the first to collect 3 complete property sets!<br>
-        📥 Draw 2 cards at the start of your turn<br>
-        🃏 Play up to 3 cards per turn<br>
-        💰 Bank cards for monetary value<br>
-        🏠 Collect properties to complete sets</p>
-      </div>
-    </div>
-  </div>
+  <canvas id="three-bg"></canvas>
 
-  <!-- Game Screen -->
-  <div id="game-screen" class="game-container hidden">
-    <header class="game-header">
-      <div class="game-title">Monopoly Deal</div>
-      <div class="game-info">
-        <div class="turn-indicator">
-          <span id="current-avatar">🎩</span>
-          <span id="current-name">Player 1</span>'s Turn
-          <div class="actions-dots" id="action-dots"></div>
+  <div class="app-container">
+    <!-- Setup Screen -->
+    <div id="setup-screen" class="setup-screen">
+      <div class="setup-container glass">
+        <div class="setup-title">
+          <h1>Monopoly Deal</h1>
+          <p>Premium Edition</p>
         </div>
-        <div class="deck-info">
-          <div class="deck-count">🃏 Deck: <span id="deck-count">0</span></div>
-        </div>
-      </div>
-    </header>
-    <div class="message-banner" id="message">Welcome to Monopoly Deal!</div>
-    <div class="game-board">
-      <div class="opponents-area" id="opponents-area"></div>
-      <div class="center-area">
-        <div class="deck-area">
-          <div class="deck" id="deck" onclick="drawCards()">
-            <span class="deck-label">Draw</span>
-            <span class="deck-num" id="deck-display">0 cards</span>
+        <div class="player-inputs" id="player-inputs">
+          <div class="player-input">
+            <div class="player-number">1</div>
+            <input type="text" placeholder="Player 1 name" maxlength="15">
+          </div>
+          <div class="player-input">
+            <div class="player-number">2</div>
+            <input type="text" placeholder="Player 2 name" maxlength="15">
           </div>
         </div>
-        <div id="current-player-board"></div>
-      </div>
-      <div class="hand-area">
-        <div class="hand-label"><span>Your Hand</span><span id="hand-count">0 cards</span></div>
-        <div class="hand-cards" id="hand-cards"></div>
-      </div>
-      <div class="action-buttons" id="action-buttons"></div>
-    </div>
-  </div>
-
-  <!-- Color Picker Modal -->
-  <div id="color-modal" class="modal-overlay hidden">
-    <div class="modal">
-      <h2 class="modal-title">Choose Property Color</h2>
-      <div class="color-picker" id="color-picker"></div>
-      <div class="modal-buttons">
-        <button class="btn btn-secondary" onclick="closeColorModal()">Cancel</button>
+        <div style="text-align: center; margin-bottom: 25px;">
+          <button class="btn btn-secondary" onclick="addPlayer()" id="add-btn">+ Add Player</button>
+        </div>
+        <button class="btn btn-primary start-btn" onclick="startGame()">🎲 Start Game</button>
+        <div class="how-to-play">
+          <h3>✨ How to Play ✨</h3>
+          <p>🎯 Goal: Collect 3 complete property sets!<br>
+          📥 Draw 2 cards at the start of your turn<br>
+          🃏 Play up to 3 cards per turn<br>
+          💰 Bank cards for monetary value<br>
+          🏠 Build your property empire!</p>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Winner Screen -->
-  <div id="winner-screen" class="winner-screen hidden">
-    <div class="winner-content">
-      <div class="winner-trophy">🏆</div>
-      <h1 class="winner-title">WINNER!</h1>
-      <p class="winner-name" id="winner-name"></p>
-      <button class="btn btn-gold" onclick="resetGame()">🎲 Play Again</button>
+    <!-- Game Screen -->
+    <div id="game-screen" class="game-container hidden">
+      <header class="game-header glass">
+        <div class="game-title">Monopoly Deal</div>
+        <div class="game-info">
+          <div class="turn-indicator">
+            <span id="current-avatar">🎩</span>
+            <span id="current-name">Player 1</span>'s Turn
+            <div class="actions-dots" id="action-dots"></div>
+          </div>
+          <div class="deck-count">🃏 Deck: <span id="deck-count">0</span></div>
+        </div>
+      </header>
+      <div class="message-banner glass" id="message">Welcome to Monopoly Deal!</div>
+      <div class="game-board">
+        <div class="opponents-area" id="opponents-area"></div>
+        <div class="center-area">
+          <div class="deck-area">
+            <div class="deck" id="deck" onclick="drawCards()">
+              <span class="deck-label">Draw</span>
+              <span class="deck-num" id="deck-display">0 cards</span>
+            </div>
+          </div>
+          <div id="current-player-board"></div>
+        </div>
+        <div class="hand-area glass">
+          <div class="hand-label"><span>✨ Your Hand</span><span id="hand-count">0 cards</span></div>
+          <div class="hand-cards" id="hand-cards"></div>
+        </div>
+        <div class="action-buttons" id="action-buttons"></div>
+      </div>
+    </div>
+
+    <!-- Color Picker Modal -->
+    <div id="color-modal" class="modal-overlay hidden">
+      <div class="modal glass">
+        <h2 class="modal-title">🎨 Choose Property Color</h2>
+        <div class="color-picker" id="color-picker"></div>
+        <div class="modal-buttons">
+          <button class="btn btn-secondary" onclick="closeColorModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Winner Screen -->
+    <div id="winner-screen" class="winner-screen hidden">
+      <div class="winner-content">
+        <div class="winner-trophy">🏆</div>
+        <h1 class="winner-title">WINNER!</h1>
+        <p class="winner-name" id="winner-name"></p>
+        <button class="btn btn-gold" onclick="resetGame()">🎲 Play Again</button>
+      </div>
     </div>
   </div>
 
 <script>
+// Three.js Background
+let scene, camera, renderer, particles;
+
+function initThreeJS() {
+  const canvas = document.getElementById('three-bg');
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  // Create particles
+  const particleCount = 500;
+  const positions = new Float32Array(particleCount * 3);
+  const colors = new Float32Array(particleCount * 3);
+
+  const colorPalette = [
+    { r: 1, g: 0.84, b: 0 },      // Gold
+    { r: 0.93, g: 0.11, b: 0.14 }, // Red
+    { r: 0.12, g: 0.7, b: 0.35 },  // Green
+    { r: 0.2, g: 0.4, b: 0.8 },    // Blue
+  ];
+
+  for (let i = 0; i < particleCount; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 50;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 50;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
+
+    const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+    colors[i * 3] = color.r;
+    colors[i * 3 + 1] = color.g;
+    colors[i * 3 + 2] = color.b;
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+  const material = new THREE.PointsMaterial({
+    size: 0.15,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.8,
+    blending: THREE.AdditiveBlending,
+  });
+
+  particles = new THREE.Points(geometry, material);
+  scene.add(particles);
+
+  camera.position.z = 20;
+
+  // Add ambient glow spheres
+  const sphereGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+  for (let i = 0; i < 10; i++) {
+    const sphereMaterial = new THREE.MeshBasicMaterial({
+      color: colorPalette[i % colorPalette.length].r * 0xFFFFFF,
+      transparent: true,
+      opacity: 0.3,
+    });
+    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    sphere.position.set(
+      (Math.random() - 0.5) * 30,
+      (Math.random() - 0.5) * 30,
+      (Math.random() - 0.5) * 30
+    );
+    sphere.userData = {
+      speed: Math.random() * 0.02 + 0.01,
+      offset: Math.random() * Math.PI * 2
+    };
+    scene.add(sphere);
+  }
+
+  animate();
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  if (particles) {
+    particles.rotation.x += 0.0003;
+    particles.rotation.y += 0.0005;
+  }
+
+  scene.children.forEach(child => {
+    if (child.userData && child.userData.speed) {
+      child.position.y += Math.sin(Date.now() * child.userData.speed + child.userData.offset) * 0.01;
+    }
+  });
+
+  renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+  if (camera && renderer) {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+});
+
+initThreeJS();
+
 // Game Constants
 const COLORS = {
   brown: { bg: '#8B4513', name: 'Brown', size: 2, rents: [1, 2] },
@@ -416,43 +1071,30 @@ const PROPERTIES = {
 const AVATARS = ['🎩', '🚗', '🐕', '👢', '🚢', '🎸'];
 const ACTION_ICONS = { passGo: '➡️', dealBreaker: '💔', slyDeal: '🦊', forcedDeal: '🔄', debtCollector: '💰', birthday: '🎂', justSayNo: '🚫', house: '🏠', hotel: '🏨', doubleRent: '✖️2️⃣' };
 
-// Game State
 let game = { players: [], currentPlayer: 0, deck: [], phase: 'setup', actions: 3, selectedCard: null };
 
-// Create Deck
 function createDeck() {
   const deck = [];
   let id = 0;
-
-  // Properties
   for (const [color, names] of Object.entries(PROPERTIES)) {
     const value = ['brown', 'lightBlue'].includes(color) ? 1 : ['pink', 'orange', 'railroad', 'utility'].includes(color) ? 2 : ['red', 'yellow'].includes(color) ? 3 : 4;
     names.forEach(name => deck.push({ id: id++, type: 'property', color, name, value }));
   }
-
-  // Wild cards
   [['brown', 'lightBlue', 1], ['pink', 'orange', 2], ['red', 'yellow', 3], ['green', 'blue', 4], ['green', 'railroad', 4], ['lightBlue', 'railroad', 4], ['utility', 'railroad', 2]].forEach(([c1, c2, v]) => {
     deck.push({ id: id++, type: 'wild', colors: [c1, c2], value: v });
   });
   deck.push({ id: id++, type: 'wild', colors: Object.keys(COLORS), value: 0, rainbow: true });
   deck.push({ id: id++, type: 'wild', colors: Object.keys(COLORS), value: 0, rainbow: true });
-
-  // Money
   [[1, 6], [2, 5], [3, 3], [4, 3], [5, 2], [10, 1]].forEach(([v, c]) => {
     for (let i = 0; i < c; i++) deck.push({ id: id++, type: 'money', value: v });
   });
-
-  // Actions
   [['passGo', 'Pass Go', 'Draw 2 cards', 1, 10], ['dealBreaker', 'Deal Breaker', 'Steal complete set', 5, 2], ['justSayNo', 'Just Say No', 'Block any action', 4, 3], ['slyDeal', 'Sly Deal', 'Steal a property', 3, 3], ['forcedDeal', 'Forced Deal', 'Swap properties', 3, 4], ['debtCollector', 'Debt Collector', 'Collect $5M', 3, 3], ['birthday', "It's My Birthday", 'All pay $2M', 2, 3], ['house', 'House', '+$3M rent', 3, 3], ['hotel', 'Hotel', '+$4M rent', 4, 2], ['doubleRent', 'Double Rent', '2x rent amount', 1, 2]].forEach(([action, name, desc, value, count]) => {
     for (let i = 0; i < count; i++) deck.push({ id: id++, type: 'action', action, name, desc, value });
   });
-
-  // Rent cards
   [['brown', 'lightBlue'], ['pink', 'orange'], ['red', 'yellow'], ['green', 'blue'], ['railroad', 'utility']].forEach(colors => {
     for (let i = 0; i < 2; i++) deck.push({ id: id++, type: 'rent', colors, value: 1 });
   });
   for (let i = 0; i < 3; i++) deck.push({ id: id++, type: 'rent', colors: Object.keys(COLORS), value: 3, wild: true });
-
   return shuffle(deck);
 }
 
@@ -464,14 +1106,13 @@ function shuffle(arr) {
   return arr;
 }
 
-// UI Functions
 function addPlayer() {
   const inputs = document.getElementById('player-inputs');
   const count = inputs.children.length;
   if (count >= 5) return;
   const div = document.createElement('div');
   div.className = 'player-input';
-  div.innerHTML = `<div class="player-number">${count + 1}</div><input type="text" placeholder="Player ${count + 1} name" maxlength="15"><button class="btn btn-secondary" onclick="this.parentElement.remove()" style="padding:8px 12px">×</button>`;
+  div.innerHTML = `<div class="player-number">${count + 1}</div><input type="text" placeholder="Player ${count + 1} name" maxlength="15"><button class="btn btn-secondary" onclick="this.parentElement.remove()" style="padding:10px 15px">×</button>`;
   inputs.appendChild(div);
   if (count + 1 >= 5) document.getElementById('add-btn').style.display = 'none';
 }
@@ -480,7 +1121,6 @@ function startGame() {
   const inputs = document.querySelectorAll('#player-inputs input');
   const names = Array.from(inputs).map((inp, i) => inp.value.trim() || `Player ${i + 1}`);
   if (names.length < 2) return alert('Need at least 2 players');
-
   game.deck = createDeck();
   game.players = names.map((name, i) => ({
     name, avatar: AVATARS[i % AVATARS.length],
@@ -490,7 +1130,6 @@ function startGame() {
   game.phase = 'draw';
   game.actions = 3;
   game.selectedCard = null;
-
   document.getElementById('setup-screen').classList.add('hidden');
   document.getElementById('game-screen').classList.remove('hidden');
   render();
@@ -498,105 +1137,93 @@ function startGame() {
 
 function render() {
   const p = game.players[game.currentPlayer];
-
-  // Header
   document.getElementById('current-avatar').textContent = p.avatar;
   document.getElementById('current-name').textContent = p.name;
   document.getElementById('deck-count').textContent = game.deck.length;
   document.getElementById('deck-display').textContent = game.deck.length + ' cards';
   document.getElementById('action-dots').innerHTML = [1,2,3].map(i => `<div class="action-dot ${i > game.actions ? 'used' : ''}"></div>`).join('');
-
-  // Opponents
-  const opponentsHtml = game.players.filter((_, i) => i !== game.currentPlayer).map(pl => renderPlayerBoard(pl, true)).join('');
-  document.getElementById('opponents-area').innerHTML = opponentsHtml;
-
-  // Current player board
+  document.getElementById('opponents-area').innerHTML = game.players.filter((_, i) => i !== game.currentPlayer).map(pl => renderPlayerBoard(pl, true)).join('');
   document.getElementById('current-player-board').innerHTML = renderPlayerBoard(p, false);
-
-  // Hand
   document.getElementById('hand-count').textContent = p.hand.length + ' cards';
-  document.getElementById('hand-cards').innerHTML = p.hand.map(card => renderCard(card, game.selectedCard?.id === card.id)).join('');
+  document.getElementById('hand-cards').innerHTML = p.hand.map((card, idx) => renderCard(card, game.selectedCard?.id === card.id, idx)).join('');
 
-  // Actions
   let btns = '';
   if (game.phase === 'draw') {
     btns = '<button class="btn btn-primary" onclick="drawCards()">📥 Draw 2 Cards</button>';
-    document.getElementById('message').textContent = `${p.name}'s turn - Draw 2 cards!`;
+    document.getElementById('message').textContent = `✨ ${p.name}'s turn - Draw 2 cards!`;
   } else if (game.phase === 'play') {
     btns = `
       <button class="btn btn-primary" onclick="playCard()" ${!game.selectedCard ? 'disabled' : ''}>▶️ Play Card</button>
       <button class="btn btn-gold" onclick="bankCard()" ${!game.selectedCard || !['money','action','rent'].includes(game.selectedCard.type) ? 'disabled' : ''}>💰 Bank Card</button>
       <button class="btn btn-secondary" onclick="endTurn()">⏭️ End Turn</button>
     `;
-    document.getElementById('message').textContent = `${p.name}'s turn - ${game.actions} actions left`;
+    document.getElementById('message').textContent = `🎯 ${p.name}'s turn - ${game.actions} actions remaining`;
   } else if (game.phase === 'discard') {
-    btns = '<span style="color:#FFD700">Click cards to discard (max 7 in hand)</span>';
-    document.getElementById('message').textContent = `${p.name} must discard to 7 cards`;
+    btns = '<span style="color:#FFD700;font-size:1.1rem">👆 Click cards to discard (max 7 in hand)</span>';
+    document.getElementById('message').textContent = `⚠️ ${p.name} must discard to 7 cards`;
   }
   document.getElementById('action-buttons').innerHTML = btns;
 
-  // Check winner
-  const completeSets = Object.values(p.properties).filter(set => set.length >= COLORS[Object.keys(p.properties).find(c => p.properties[c] === set)]?.size).length;
+  const completeSets = Object.entries(p.properties).filter(([c, cards]) => cards.length >= COLORS[c].size).length;
   if (completeSets >= 3) {
     document.getElementById('winner-name').textContent = `${p.avatar} ${p.name}`;
     document.getElementById('winner-screen').classList.remove('hidden');
+    createConfetti();
   }
 }
 
 function renderPlayerBoard(player, isOpponent) {
   const bankTotal = player.bank.reduce((s, c) => s + c.value, 0);
   const completeSets = Object.entries(player.properties).filter(([c, cards]) => cards.length >= COLORS[c].size).length;
-
   let propsHtml = '';
   for (const [color, cards] of Object.entries(player.properties)) {
     const info = COLORS[color];
     const isComplete = cards.length >= info.size;
     propsHtml += `<div class="property-set ${isComplete ? 'complete' : ''}">
-      <div class="set-header">${Array(info.size).fill(0).map((_, i) => `<div class="set-dot ${i < cards.length ? 'filled' : ''}" style="background:${i < cards.length ? info.bg : ''}"></div>`).join('')}</div>
+      <div class="set-header">${Array(info.size).fill(0).map((_, i) => `<div class="set-dot ${i < cards.length ? 'filled' : ''}" style="${i < cards.length ? `background:${info.bg};color:${info.bg}` : ''}"></div>`).join('')}</div>
       <div class="mini-cards">${cards.map(c => `<div class="mini-card"><div class="mini-color" style="background:${info.bg}"></div><div class="mini-body"><span class="mini-value">$${c.value}M</span></div></div>`).join('')}</div>
     </div>`;
   }
-
-  return `<div class="player-board ${isOpponent ? 'opponent' : 'current'}">
+  return `<div class="player-board glass ${isOpponent ? 'opponent' : 'current'}">
     <div class="player-header">
-      <div class="player-name"><span class="player-avatar">${player.avatar}</span><span>${player.name}</span>${!isOpponent ? '⭐' : ''}</div>
+      <div class="player-name"><span class="player-avatar">${player.avatar}</span><span>${player.name}</span>${!isOpponent ? ' ⭐' : ''}</div>
       <div class="player-stats"><div class="stat">🃏 ${player.hand.length}</div><div class="stat">🏆 ${completeSets}/3</div></div>
     </div>
-    <div class="player-properties">${propsHtml || '<span style="color:rgba(255,255,255,0.4);font-size:0.8rem">No properties</span>'}</div>
-    <div class="player-bank">${player.bank.map(c => `<div class="bank-card">$${c.value}M</div>`).join('') || '<span style="color:rgba(255,255,255,0.4);font-size:0.7rem">Empty</span>'}</div>
+    <div class="player-properties">${propsHtml || '<span style="color:rgba(255,255,255,0.4);font-size:0.85rem">No properties yet</span>'}</div>
+    <div class="player-bank">${player.bank.map(c => `<div class="bank-card">$${c.value}M</div>`).join('') || '<span style="color:rgba(255,255,255,0.4);font-size:0.75rem">Empty</span>'}</div>
     <div class="bank-total">💵 Bank: $${bankTotal}M</div>
   </div>`;
 }
 
-function renderCard(card, selected) {
+function renderCard(card, selected, index) {
   const sel = selected ? 'selected' : '';
+  const delay = `animation-delay: ${index * 0.05}s`;
   if (card.type === 'property') {
     const info = COLORS[card.color];
-    return `<div class="card property ${sel}" onclick="selectCard(${card.id})">
+    return `<div class="card property ${sel}" onclick="selectCard(${card.id})" style="${delay}">
       <div class="card-color-bar" style="background:${info.bg}"><span class="card-name">${card.name}</span></div>
       <div class="card-body"><div class="rent-info">${info.rents.map((r, i) => `${i+1}/${info.size}: $${r}M`).join('<br>')}</div></div>
       <div class="card-value">$${card.value}M</div>
     </div>`;
   } else if (card.type === 'money') {
-    return `<div class="card money ${sel}" onclick="selectCard(${card.id})"><div class="money-value">$${card.value}M</div><div class="money-label">Million</div></div>`;
+    return `<div class="card money ${sel}" onclick="selectCard(${card.id})" style="${delay}"><div class="money-value">$${card.value}M</div><div class="money-label">Million</div></div>`;
   } else if (card.type === 'action') {
-    return `<div class="card action ${sel}" onclick="selectCard(${card.id})">
+    return `<div class="card action ${sel}" onclick="selectCard(${card.id})" style="${delay}">
       <div class="action-header"><span class="action-title">${card.name}</span></div>
       <div class="action-icon">${ACTION_ICONS[card.action] || '⚡'}</div>
       <div class="action-desc">${card.desc}</div>
       <div class="card-value">$${card.value}M</div>
     </div>`;
   } else if (card.type === 'rent') {
-    const colors = card.wild ? '🌈' : card.colors.map(c => `<div class="rent-block" style="background:${COLORS[c].bg}"></div>`).join('');
-    return `<div class="card rent ${sel}" onclick="selectCard(${card.id})">
+    return `<div class="card rent ${sel}" onclick="selectCard(${card.id})" style="${delay}">
       <div class="rent-title">RENT</div>
-      <div class="rent-colors">${card.wild ? '<span style="font-size:2rem">🌈💰</span>' : colors}</div>
+      <div class="rent-colors">${card.wild ? '<span style="font-size:2.2rem">🌈💰</span>' : card.colors.map(c => `<div class="rent-block" style="background:${COLORS[c].bg}"></div>`).join('')}</div>
       <div class="card-value">$${card.value}M</div>
     </div>`;
   } else if (card.type === 'wild') {
-    return `<div class="card wild ${card.rainbow ? 'rainbow' : ''} ${sel}" onclick="selectCard(${card.id})">
-      <div class="wild-title">${card.rainbow ? 'Any Color' : 'Wild Card'}</div>
-      <div class="wild-colors">${card.rainbow ? '<span style="font-size:2rem">🌈</span>' : card.colors.map(c => `<div class="wild-dot" style="background:${COLORS[c].bg}"></div>`).join('')}</div>
+    return `<div class="card wild ${card.rainbow ? 'rainbow' : ''} ${sel}" onclick="selectCard(${card.id})" style="${delay}">
+      <div class="wild-title">${card.rainbow ? '🌈 Any Color' : 'Wild Card'}</div>
+      <div class="wild-colors">${card.rainbow ? '<span style="font-size:2.2rem">🌈</span>' : card.colors.map(c => `<div class="wild-dot" style="background:${COLORS[c].bg}"></div>`).join('')}</div>
       <div class="card-value">$${card.value}M</div>
     </div>`;
   }
@@ -607,14 +1234,12 @@ function selectCard(id) {
   const p = game.players[game.currentPlayer];
   const card = p.hand.find(c => c.id === id);
   if (!card) return;
-
   if (game.phase === 'discard') {
     p.hand = p.hand.filter(c => c.id !== id);
     if (p.hand.length <= 7) nextTurn();
     else render();
     return;
   }
-
   game.selectedCard = game.selectedCard?.id === id ? null : card;
   render();
 }
@@ -634,12 +1259,7 @@ function playCard() {
   if (!game.selectedCard || game.actions <= 0) return;
   const p = game.players[game.currentPlayer];
   const card = game.selectedCard;
-
-  if (card.type === 'wild') {
-    showColorPicker(card.colors);
-    return;
-  }
-
+  if (card.type === 'wild') { showColorPicker(card.colors); return; }
   if (card.type === 'property') {
     if (!p.properties[card.color]) p.properties[card.color] = [];
     p.properties[card.color].push(card);
@@ -651,11 +1271,9 @@ function playCard() {
     }
     p.bank.push(card);
   }
-
   p.hand = p.hand.filter(c => c.id !== card.id);
   game.selectedCard = null;
   game.actions--;
-
   if (game.actions <= 0) checkEndTurn();
   else render();
 }
@@ -664,21 +1282,17 @@ function bankCard() {
   if (!game.selectedCard || game.actions <= 0) return;
   const p = game.players[game.currentPlayer];
   const card = game.selectedCard;
-
   if (!['money', 'action', 'rent'].includes(card.type)) return;
-
   p.bank.push(card);
   p.hand = p.hand.filter(c => c.id !== card.id);
   game.selectedCard = null;
   game.actions--;
-
   if (game.actions <= 0) checkEndTurn();
   else render();
 }
 
 function showColorPicker(colors) {
-  const picker = document.getElementById('color-picker');
-  picker.innerHTML = colors.map(c => `<div class="color-option" style="background:${COLORS[c].bg}" onclick="selectColor('${c}')"></div>`).join('');
+  document.getElementById('color-picker').innerHTML = colors.map(c => `<div class="color-option" style="background:${COLORS[c].bg}" onclick="selectColor('${c}')"></div>`).join('');
   document.getElementById('color-modal').classList.remove('hidden');
 }
 
@@ -691,13 +1305,11 @@ function closeColorModal() {
 function selectColor(color) {
   const p = game.players[game.currentPlayer];
   const card = game.selectedCard;
-
   if (!p.properties[color]) p.properties[color] = [];
   p.properties[color].push({ ...card, color });
   p.hand = p.hand.filter(c => c.id !== card.id);
   game.selectedCard = null;
   game.actions--;
-
   closeColorModal();
   if (game.actions <= 0) checkEndTurn();
   else render();
@@ -705,17 +1317,11 @@ function selectColor(color) {
 
 function checkEndTurn() {
   const p = game.players[game.currentPlayer];
-  if (p.hand.length > 7) {
-    game.phase = 'discard';
-    render();
-  } else {
-    nextTurn();
-  }
+  if (p.hand.length > 7) { game.phase = 'discard'; render(); }
+  else nextTurn();
 }
 
-function endTurn() {
-  checkEndTurn();
-}
+function endTurn() { checkEndTurn(); }
 
 function nextTurn() {
   game.currentPlayer = (game.currentPlayer + 1) % game.players.length;
@@ -723,6 +1329,20 @@ function nextTurn() {
   game.actions = 3;
   game.selectedCard = null;
   render();
+}
+
+function createConfetti() {
+  const colors = ['#FFD700', '#ED1B24', '#1FB25A', '#87CEEB', '#FF69B4', '#FF8C00'];
+  for (let i = 0; i < 100; i++) {
+    const confetti = document.createElement('div');
+    confetti.className = 'confetti-piece';
+    confetti.style.left = Math.random() * 100 + 'vw';
+    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+    confetti.style.animationDelay = Math.random() * 2 + 's';
+    document.body.appendChild(confetti);
+    setTimeout(() => confetti.remove(), 5000);
+  }
 }
 
 function resetGame() {
