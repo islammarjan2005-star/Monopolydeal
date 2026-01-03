@@ -9,7 +9,6 @@
         body { overflow: hidden; background: #000; font-family: 'Segoe UI', Arial, sans-serif; }
         #game-canvas { width: 100vw; height: 100vh; display: block; }
 
-        /* UI Overlay */
         #ui-overlay {
             position: fixed;
             top: 0; left: 0;
@@ -19,112 +18,96 @@
         }
         #ui-overlay > * { pointer-events: auto; }
 
-        /* HUD */
         #hud {
             position: absolute;
             top: 20px; left: 50%;
             transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(15px);
-            padding: 15px 40px;
+            padding: 12px 35px;
             border-radius: 20px;
             color: white;
             display: flex;
-            gap: 50px;
+            gap: 40px;
             border: 1px solid rgba(255, 215, 0, 0.4);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 30px rgba(255,215,0,0.1);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
         .hud-stat { display: flex; flex-direction: column; align-items: center; }
-        .hud-value { font-size: 28px; font-weight: bold; color: #ffd700; text-shadow: 0 0 20px rgba(255,215,0,0.5); }
-        .hud-label { font-size: 11px; opacity: 0.7; text-transform: uppercase; letter-spacing: 2px; }
+        .hud-value { font-size: 24px; font-weight: bold; color: #ffd700; }
+        .hud-label { font-size: 10px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* Player Info */
         #player-info {
             position: absolute;
-            top: 20px; left: 30px;
+            top: 20px; left: 20px;
             background: rgba(0, 0, 0, 0.85);
             backdrop-filter: blur(15px);
-            padding: 20px 30px;
+            padding: 15px 25px;
             border-radius: 15px;
             color: white;
             border: 1px solid rgba(255, 215, 0, 0.3);
         }
-        #player-info .name { font-size: 22px; font-weight: bold; color: #ffd700; }
-        #player-info .turn-text { font-size: 13px; opacity: 0.7; margin-top: 5px; }
+        #player-info .name { font-size: 20px; font-weight: bold; color: #ffd700; }
+        #player-info .turn-text { font-size: 12px; opacity: 0.7; margin-top: 3px; }
 
-        /* Action Buttons */
         #action-buttons {
             position: absolute;
-            bottom: 220px; right: 30px;
+            bottom: 180px; right: 20px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
         .action-btn {
             background: linear-gradient(180deg, rgba(20,20,20,0.95) 0%, rgba(10,10,10,0.98) 100%);
             border: 2px solid rgba(255, 215, 0, 0.5);
             color: white;
-            padding: 16px 28px;
-            border-radius: 12px;
+            padding: 14px 24px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 1px;
-            backdrop-filter: blur(10px);
         }
         .action-btn:hover {
             background: linear-gradient(180deg, rgba(255,215,0,0.25) 0%, rgba(255,215,0,0.1) 100%);
             border-color: #ffd700;
             transform: translateX(-5px);
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
         }
         .action-btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none !important; }
-        .action-btn.primary { border-color: #4CAF50; }
-        .action-btn.primary:hover { box-shadow: 0 0 30px rgba(76, 175, 80, 0.5); }
 
-        /* Card Info Tooltip */
         #card-tooltip {
             position: absolute;
-            top: 100px; left: 30px;
-            background: rgba(0, 0, 0, 0.9);
+            top: 90px; left: 20px;
+            background: rgba(0, 0, 0, 0.92);
             backdrop-filter: blur(15px);
-            padding: 20px 25px;
-            border-radius: 15px;
+            padding: 18px 22px;
+            border-radius: 12px;
             color: white;
-            min-width: 280px;
+            min-width: 240px;
+            max-width: 280px;
             border: 1px solid rgba(255, 215, 0, 0.4);
             display: none;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
         #card-tooltip.visible { display: block; }
-        #card-tooltip h3 { color: #ffd700; margin-bottom: 10px; font-size: 18px; }
-        #card-tooltip p { font-size: 14px; opacity: 0.85; line-height: 1.6; }
-        #card-tooltip .card-value-display {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            color: #4CAF50;
-            font-weight: bold;
-        }
+        #card-tooltip h3 { color: #ffd700; margin-bottom: 8px; font-size: 16px; }
+        #card-tooltip p { font-size: 13px; opacity: 0.85; line-height: 1.5; }
+        #card-tooltip .value { margin-top: 10px; color: #4CAF50; font-weight: bold; font-size: 14px; }
 
-        /* Instructions */
         #instructions {
             position: absolute;
-            bottom: 30px; left: 50%;
+            bottom: 25px; left: 50%;
             transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 15px 30px;
-            border-radius: 12px;
+            padding: 12px 25px;
+            border-radius: 10px;
             color: white;
-            font-size: 14px;
+            font-size: 13px;
             border: 1px solid rgba(255, 255, 255, 0.15);
-            text-align: center;
         }
 
-        /* Setup Screen */
         #setup-screen {
             position: fixed;
             top: 0; left: 0;
@@ -139,143 +122,49 @@
         .setup-box {
             background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(30px);
-            padding: 60px;
-            border-radius: 30px;
+            padding: 50px;
+            border-radius: 25px;
             border: 2px solid rgba(255, 215, 0, 0.5);
             text-align: center;
-            max-width: 500px;
+            max-width: 450px;
             box-shadow: 0 0 60px rgba(255, 215, 0, 0.2);
         }
-        .setup-box h1 {
-            color: #ffd700;
-            font-size: 48px;
-            margin-bottom: 8px;
-            text-shadow: 0 0 40px rgba(255, 215, 0, 0.6);
-            letter-spacing: 4px;
-        }
-        .setup-box h2 {
-            color: white;
-            font-size: 18px;
-            font-weight: normal;
-            margin-bottom: 50px;
-            opacity: 0.7;
-            letter-spacing: 6px;
-            text-transform: uppercase;
-        }
-        .setup-box label { color: white; font-size: 16px; display: block; margin-bottom: 15px; text-align: left; }
+        .setup-box h1 { color: #ffd700; font-size: 42px; margin-bottom: 8px; text-shadow: 0 0 40px rgba(255, 215, 0, 0.6); }
+        .setup-box h2 { color: white; font-size: 16px; font-weight: normal; margin-bottom: 40px; opacity: 0.7; letter-spacing: 4px; }
+        .setup-box label { color: white; font-size: 14px; display: block; margin-bottom: 12px; text-align: left; }
         .setup-box select {
-            width: 100%;
-            padding: 18px;
-            font-size: 16px;
-            border-radius: 12px;
-            border: 2px solid rgba(255, 215, 0, 0.4);
-            background: rgba(0, 0, 0, 0.6);
-            color: white;
-            margin-bottom: 35px;
-            cursor: pointer;
-            transition: all 0.3s;
+            width: 100%; padding: 15px; font-size: 15px; border-radius: 10px;
+            border: 2px solid rgba(255, 215, 0, 0.4); background: rgba(0, 0, 0, 0.6);
+            color: white; margin-bottom: 30px; cursor: pointer;
         }
-        .setup-box select:hover { border-color: #ffd700; }
         .setup-box select option { background: #1a1a2e; }
         #start-btn {
             background: linear-gradient(180deg, #ffd700 0%, #ff8c00 100%);
-            border: none;
-            color: #000;
-            padding: 20px 60px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 3px;
+            border: none; color: #000; padding: 18px 50px; font-size: 16px;
+            font-weight: bold; border-radius: 12px; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 2px; transition: all 0.3s;
         }
-        #start-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 50px rgba(255, 215, 0, 0.7);
-        }
+        #start-btn:hover { transform: scale(1.05); box-shadow: 0 0 50px rgba(255, 215, 0, 0.7); }
 
-        /* Winner Screen */
         #winner-screen {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); display: none;
+            align-items: center; justify-content: center; z-index: 2000;
         }
         #winner-screen.visible { display: flex; }
         .winner-box { text-align: center; }
-        .winner-box h1 {
-            font-size: 72px;
-            color: #ffd700;
-            text-shadow: 0 0 60px rgba(255, 215, 0, 0.8);
-            margin-bottom: 20px;
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-        .winner-box p { font-size: 28px; color: white; margin-bottom: 50px; }
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
+        .winner-box h1 { font-size: 64px; color: #ffd700; text-shadow: 0 0 60px rgba(255, 215, 0, 0.8); margin-bottom: 20px; }
+        .winner-box p { font-size: 26px; color: white; margin-bottom: 40px; }
 
-        /* Loading */
         #loading {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: #000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 3000;
-            transition: opacity 0.5s;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 3000;
         }
-        #loading.hidden { opacity: 0; pointer-events: none; }
-        .loader {
-            width: 70px; height: 70px;
-            border: 4px solid rgba(255, 215, 0, 0.2);
-            border-top-color: #ffd700;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+        #loading.hidden { opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+        .loader { width: 60px; height: 60px; border: 4px solid rgba(255, 215, 0, 0.2); border-top-color: #ffd700; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        #loading p { color: white; margin-top: 25px; font-size: 16px; letter-spacing: 2px; }
-
-        /* Properties Panel */
-        #properties-panel {
-            position: absolute;
-            top: 20px; right: 30px;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(15px);
-            padding: 20px;
-            border-radius: 15px;
-            color: white;
-            min-width: 200px;
-            border: 1px solid rgba(255, 215, 0, 0.3);
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        #properties-panel h4 { color: #ffd700; margin-bottom: 15px; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; }
-        .prop-set {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-            padding: 8px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 8px;
-        }
-        .prop-set.complete { border: 1px solid #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.3); }
-        .prop-color {
-            width: 24px; height: 24px;
-            border-radius: 6px;
-            border: 2px solid rgba(255,255,255,0.3);
-        }
-        .prop-count { font-size: 13px; }
+        #loading p { color: white; margin-top: 20px; font-size: 15px; }
     </style>
 </head>
 <body>
@@ -287,7 +176,7 @@
     <div id="setup-screen">
         <div class="setup-box">
             <h1>MONOPOLY DEAL</h1>
-            <h2>3D First Person</h2>
+            <h2>3D FIRST PERSON</h2>
             <label>Number of Players</label>
             <select id="player-count">
                 <option value="2">2 Players</option>
@@ -313,7 +202,7 @@
             </div>
             <div class="hud-stat">
                 <span class="hud-value" id="hud-cards">5</span>
-                <span class="hud-label">In Hand</span>
+                <span class="hud-label">Hand</span>
             </div>
             <div class="hud-stat">
                 <span class="hud-value" id="hud-sets">0/3</span>
@@ -325,27 +214,20 @@
             </div>
         </div>
 
-        <div id="properties-panel">
-            <h4>Your Properties</h4>
-            <div id="prop-list"></div>
-        </div>
-
         <div id="card-tooltip">
             <h3 id="tooltip-title">Card Name</h3>
-            <p id="tooltip-desc">Card description</p>
-            <div class="card-value-display" id="tooltip-value"></div>
+            <p id="tooltip-desc">Description</p>
+            <div class="value" id="tooltip-value">Value: $0M</div>
         </div>
 
         <div id="action-buttons">
-            <button class="action-btn primary" id="btn-draw">Draw Cards</button>
+            <button class="action-btn" id="btn-draw">Draw Cards</button>
             <button class="action-btn" id="btn-play">Play Card</button>
             <button class="action-btn" id="btn-bank">Bank Card</button>
             <button class="action-btn" id="btn-end">End Turn</button>
         </div>
 
-        <div id="instructions">
-            Hover over cards to inspect • Click to select • Space to play selected card
-        </div>
+        <div id="instructions">Click cards to select • PLAY adds to properties • BANK adds to money pile</div>
     </div>
 
     <div id="winner-screen">
@@ -358,57 +240,53 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script>
-        // ===================== CARD DATA =====================
+        // ==================== CARD DATA ====================
         const CARD_DATA = {
             properties: [
-                { name: 'Mediterranean Avenue', color: 'brown', value: 1 },
-                { name: 'Baltic Avenue', color: 'brown', value: 1 },
-                { name: 'Oriental Avenue', color: 'lightBlue', value: 1 },
-                { name: 'Vermont Avenue', color: 'lightBlue', value: 1 },
-                { name: 'Connecticut Avenue', color: 'lightBlue', value: 1 },
-                { name: 'St. Charles Place', color: 'pink', value: 2 },
-                { name: 'States Avenue', color: 'pink', value: 2 },
-                { name: 'Virginia Avenue', color: 'pink', value: 2 },
-                { name: 'St. James Place', color: 'orange', value: 2 },
-                { name: 'Tennessee Avenue', color: 'orange', value: 2 },
-                { name: 'New York Avenue', color: 'orange', value: 2 },
-                { name: 'Kentucky Avenue', color: 'red', value: 3 },
-                { name: 'Indiana Avenue', color: 'red', value: 3 },
-                { name: 'Illinois Avenue', color: 'red', value: 3 },
-                { name: 'Atlantic Avenue', color: 'yellow', value: 3 },
-                { name: 'Ventnor Avenue', color: 'yellow', value: 3 },
+                { name: 'Mediterranean Ave', color: 'brown', value: 1 },
+                { name: 'Baltic Ave', color: 'brown', value: 1 },
+                { name: 'Oriental Ave', color: 'lightBlue', value: 1 },
+                { name: 'Vermont Ave', color: 'lightBlue', value: 1 },
+                { name: 'Connecticut Ave', color: 'lightBlue', value: 1 },
+                { name: 'St. Charles Pl', color: 'pink', value: 2 },
+                { name: 'States Ave', color: 'pink', value: 2 },
+                { name: 'Virginia Ave', color: 'pink', value: 2 },
+                { name: 'St. James Pl', color: 'orange', value: 2 },
+                { name: 'Tennessee Ave', color: 'orange', value: 2 },
+                { name: 'New York Ave', color: 'orange', value: 2 },
+                { name: 'Kentucky Ave', color: 'red', value: 3 },
+                { name: 'Indiana Ave', color: 'red', value: 3 },
+                { name: 'Illinois Ave', color: 'red', value: 3 },
+                { name: 'Atlantic Ave', color: 'yellow', value: 3 },
+                { name: 'Ventnor Ave', color: 'yellow', value: 3 },
                 { name: 'Marvin Gardens', color: 'yellow', value: 3 },
-                { name: 'Pacific Avenue', color: 'green', value: 4 },
-                { name: 'North Carolina Avenue', color: 'green', value: 4 },
-                { name: 'Pennsylvania Avenue', color: 'green', value: 4 },
+                { name: 'Pacific Ave', color: 'green', value: 4 },
+                { name: 'N. Carolina Ave', color: 'green', value: 4 },
+                { name: 'Pennsylvania Ave', color: 'green', value: 4 },
                 { name: 'Park Place', color: 'blue', value: 4 },
                 { name: 'Boardwalk', color: 'blue', value: 4 },
-                { name: 'Reading Railroad', color: 'railroad', value: 2 },
-                { name: 'Pennsylvania Railroad', color: 'railroad', value: 2 },
+                { name: 'Reading RR', color: 'railroad', value: 2 },
+                { name: 'Pennsylvania RR', color: 'railroad', value: 2 },
                 { name: 'B&O Railroad', color: 'railroad', value: 2 },
                 { name: 'Short Line', color: 'railroad', value: 2 },
-                { name: 'Electric Company', color: 'utility', value: 2 },
+                { name: 'Electric Co', color: 'utility', value: 2 },
                 { name: 'Water Works', color: 'utility', value: 2 },
             ],
             money: [
-                { value: 1, count: 6 },
-                { value: 2, count: 5 },
-                { value: 3, count: 3 },
-                { value: 4, count: 3 },
-                { value: 5, count: 2 },
-                { value: 10, count: 1 },
+                { value: 1, count: 6 }, { value: 2, count: 5 }, { value: 3, count: 3 },
+                { value: 4, count: 3 }, { value: 5, count: 2 }, { value: 10, count: 1 },
             ],
             actions: [
-                { name: 'Deal Breaker', desc: 'Steal a complete property set from any player!', value: 5, count: 2 },
-                { name: 'Just Say No', desc: 'Cancel any action played against you', value: 4, count: 3 },
-                { name: 'Sly Deal', desc: 'Steal a property from another player', value: 3, count: 3 },
-                { name: 'Forced Deal', desc: 'Swap one of your properties with another player', value: 3, count: 4 },
-                { name: 'Debt Collector', desc: 'Force any player to pay you $5M', value: 3, count: 3 },
-                { name: "It's My Birthday", desc: 'All other players pay you $2M each', value: 2, count: 3 },
-                { name: 'Pass Go', desc: 'Draw 2 extra cards from the deck', value: 1, count: 10 },
-                { name: 'House', desc: 'Add to a complete set to increase rent by $3M', value: 3, count: 3 },
-                { name: 'Hotel', desc: 'Add to a set with house to increase rent by $4M', value: 4, count: 2 },
-                { name: 'Double Rent', desc: 'Play with rent card to double the amount', value: 1, count: 2 },
+                { name: 'Deal Breaker', desc: 'Steal a complete set!', value: 5, count: 2 },
+                { name: 'Just Say No', desc: 'Block any action', value: 4, count: 3 },
+                { name: 'Sly Deal', desc: 'Steal a property', value: 3, count: 3 },
+                { name: 'Forced Deal', desc: 'Swap properties', value: 3, count: 4 },
+                { name: 'Debt Collector', desc: 'Collect $5M', value: 3, count: 3 },
+                { name: 'Birthday', desc: 'All pay $2M', value: 2, count: 3 },
+                { name: 'Pass Go', desc: 'Draw 2 cards', value: 1, count: 10 },
+                { name: 'House', desc: '+$3M rent', value: 3, count: 3 },
+                { name: 'Hotel', desc: '+$4M rent', value: 4, count: 2 },
+                { name: 'Double Rent', desc: '2x rent', value: 1, count: 2 },
             ],
             rent: [
                 { colors: ['brown', 'lightBlue'], value: 1, count: 2 },
@@ -430,573 +308,465 @@
             ]
         };
 
-        const COLOR_VALUES = {
-            brown: { hex: 0x8B4513, name: 'Brown', size: 2 },
-            lightBlue: { hex: 0x87CEEB, name: 'Light Blue', size: 3 },
-            pink: { hex: 0xFF69B4, name: 'Pink', size: 3 },
-            orange: { hex: 0xFF8C00, name: 'Orange', size: 3 },
-            red: { hex: 0xDC143C, name: 'Red', size: 3 },
-            yellow: { hex: 0xFFD700, name: 'Yellow', size: 3 },
-            green: { hex: 0x228B22, name: 'Green', size: 3 },
-            blue: { hex: 0x0000CD, name: 'Dark Blue', size: 2 },
-            railroad: { hex: 0x2F2F2F, name: 'Railroad', size: 4 },
-            utility: { hex: 0x90EE90, name: 'Utility', size: 2 }
+        const COLOR_HEX = {
+            brown: 0x8B4513, lightBlue: 0x87CEEB, pink: 0xFF1493, orange: 0xFF8C00,
+            red: 0xDC143C, yellow: 0xFFD700, green: 0x228B22, blue: 0x0000CD,
+            railroad: 0x333333, utility: 0x90EE90
         };
 
-        // ===================== THREE.JS SETUP =====================
-        let scene, camera, renderer;
-        let raycaster, mouse;
-        let handCards = [], tableCards = [];
+        const COLOR_NAMES = {
+            brown: 'Brown', lightBlue: 'Light Blue', pink: 'Pink', orange: 'Orange',
+            red: 'Red', yellow: 'Yellow', green: 'Green', blue: 'Dark Blue',
+            railroad: 'Railroad', utility: 'Utility'
+        };
+
+        const SET_SIZE = {
+            brown: 2, lightBlue: 3, pink: 3, orange: 3, red: 3,
+            yellow: 3, green: 3, blue: 2, railroad: 4, utility: 2
+        };
+
+        // ==================== THREE.JS ====================
+        let scene, camera, renderer, raycaster, mouse;
+        let handCards = [], propertyMeshes = [], bankMeshes = [], opponentMeshes = [];
         let selectedCard = null, hoveredCard = null;
-        let envMap;
 
-        // Game state
         let game = {
-            players: [],
-            currentPlayer: 0,
-            deck: [],
-            discardPile: [],
-            phase: 'draw',
-            actions: 3,
-            turnDrawn: false
+            players: [], currentPlayer: 0, deck: [], phase: 'draw', actions: 3, turnDrawn: false
         };
 
-        // Card dimensions (poker card ratio) - standing upright
-        const CARD_WIDTH = 0.25;
-        const CARD_HEIGHT = 0.35;
-        const CARD_DEPTH = 0.004;
+        const CARD_W = 0.22, CARD_H = 0.32, CARD_D = 0.003;
 
-        // ===================== INITIALIZATION =====================
         init();
 
         function init() {
-            // Scene setup
             scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x0a0a15);
+            scene.fog = new THREE.Fog(0x0a0a15, 8, 20);
 
-            // Camera - First person POV
-            camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 100);
-            camera.position.set(0, 1.8, 2.8);
-            camera.lookAt(0, 0.9, 0);
+            // Camera - looking down at table from player seat
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.set(0, 2.2, 3.5);
+            camera.lookAt(0, 0.8, 0);
 
-            // Renderer with high quality
             const canvas = document.getElementById('game-canvas');
-            renderer = new THREE.WebGLRenderer({
-                canvas,
-                antialias: true,
-                powerPreference: 'high-performance'
-            });
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             renderer.toneMapping = THREE.ACESFilmicToneMapping;
-            renderer.toneMappingExposure = 1.0;
-            renderer.outputEncoding = THREE.sRGBEncoding;
-            renderer.physicallyCorrectLights = true;
+            renderer.toneMappingExposure = 1.1;
 
-            // Raycaster
             raycaster = new THREE.Raycaster();
             mouse = new THREE.Vector2();
 
-            // Create environment
             createEnvironment();
             createLighting();
-            createEnvMap();
 
-            // Event listeners
-            window.addEventListener('resize', onWindowResize);
+            window.addEventListener('resize', onResize);
             canvas.addEventListener('mousemove', onMouseMove);
-            canvas.addEventListener('click', onMouseClick);
-            window.addEventListener('keydown', onKeyDown);
+            canvas.addEventListener('click', onClick);
 
-            // UI Events
             document.getElementById('start-btn').addEventListener('click', startGame);
             document.getElementById('btn-draw').addEventListener('click', drawCards);
-            document.getElementById('btn-play').addEventListener('click', playSelectedCard);
-            document.getElementById('btn-bank').addEventListener('click', bankSelectedCard);
+            document.getElementById('btn-play').addEventListener('click', playCard);
+            document.getElementById('btn-bank').addEventListener('click', bankCard);
             document.getElementById('btn-end').addEventListener('click', endTurn);
 
-            // Hide loading
-            setTimeout(() => {
-                document.getElementById('loading').classList.add('hidden');
-            }, 1500);
-
-            // Animation loop
+            setTimeout(() => document.getElementById('loading').classList.add('hidden'), 1000);
             animate();
         }
 
-        function createEnvMap() {
-            // Create a simple environment map for reflections
-            const cubeRenderTarget = new THREE.WebGLCubeRenderTarget(256);
-            cubeRenderTarget.texture.type = THREE.HalfFloatType;
-
-            // Simple gradient environment
-            const envScene = new THREE.Scene();
-            const envGeo = new THREE.SphereGeometry(50, 32, 32);
-            const envMat = new THREE.MeshBasicMaterial({
-                side: THREE.BackSide,
-                color: 0x1a1a2e
-            });
-            envScene.add(new THREE.Mesh(envGeo, envMat));
-
-            // Add some colored lights to env
-            const light1 = new THREE.PointLight(0xffd700, 2, 30);
-            light1.position.set(0, 10, 0);
-            envScene.add(light1);
-        }
-
         function createEnvironment() {
-            // Ambient background gradient
-            scene.background = new THREE.Color(0x0a0a1a);
-            scene.fog = new THREE.Fog(0x0a0a1a, 5, 25);
-
-            // Casino room walls
-            const roomGeo = new THREE.BoxGeometry(20, 10, 20);
-            const roomMat = new THREE.MeshStandardMaterial({
-                color: 0x1a1a2e,
-                side: THREE.BackSide,
-                roughness: 0.9,
-                metalness: 0.1
-            });
-            const room = new THREE.Mesh(roomGeo, roomMat);
-            room.position.y = 5;
-            scene.add(room);
-
-            // Poker table
-            createTable();
-
             // Floor
-            const floorGeo = new THREE.PlaneGeometry(20, 20);
-            const floorMat = new THREE.MeshStandardMaterial({
-                color: 0x1a0a0a,
-                roughness: 0.8,
-                metalness: 0.2
-            });
-            const floor = new THREE.Mesh(floorGeo, floorMat);
+            const floor = new THREE.Mesh(
+                new THREE.PlaneGeometry(25, 25),
+                new THREE.MeshStandardMaterial({ color: 0x1a0a05, roughness: 0.8 })
+            );
             floor.rotation.x = -Math.PI / 2;
             floor.receiveShadow = true;
             scene.add(floor);
 
-            // Add deck on table
-            createDeckMesh();
+            // Table
+            const tableGeo = new THREE.CylinderGeometry(2.8, 2.8, 0.12, 64);
+            const tableMat = new THREE.MeshStandardMaterial({ color: 0x0d5c0d, roughness: 0.85 });
+            const table = new THREE.Mesh(tableGeo, tableMat);
+            table.position.y = 0.75;
+            table.receiveShadow = true;
+            scene.add(table);
 
-            // Add atmospheric particles
-            createParticles();
-        }
-
-        function createTable() {
-            const tableGroup = new THREE.Group();
-
-            // Felt surface
-            const feltGeo = new THREE.CylinderGeometry(2.2, 2.2, 0.08, 64);
-            const feltMat = new THREE.MeshStandardMaterial({
-                color: 0x0d5c0d,
-                roughness: 0.85,
-                metalness: 0.0
-            });
-            const felt = new THREE.Mesh(feltGeo, feltMat);
-            felt.position.y = 0.76;
-            felt.receiveShadow = true;
-            tableGroup.add(felt);
-
-            // Wooden rim
-            const rimGeo = new THREE.TorusGeometry(2.25, 0.08, 16, 64);
-            const woodMat = new THREE.MeshStandardMaterial({
-                color: 0x3d1f0d,
-                roughness: 0.4,
-                metalness: 0.3
-            });
-            const rim = new THREE.Mesh(rimGeo, woodMat);
+            // Table rim
+            const rim = new THREE.Mesh(
+                new THREE.TorusGeometry(2.85, 0.1, 16, 64),
+                new THREE.MeshStandardMaterial({ color: 0x3d1f0d, roughness: 0.4, metalness: 0.3 })
+            );
             rim.rotation.x = Math.PI / 2;
-            rim.position.y = 0.8;
+            rim.position.y = 0.81;
             rim.castShadow = true;
-            tableGroup.add(rim);
+            scene.add(rim);
 
-            // Inner gold ring
-            const goldRimGeo = new THREE.TorusGeometry(2.15, 0.02, 8, 64);
-            const goldMat = new THREE.MeshStandardMaterial({
-                color: 0xffd700,
-                roughness: 0.2,
-                metalness: 0.9,
-                emissive: 0xffd700,
-                emissiveIntensity: 0.1
-            });
-            const goldRim = new THREE.Mesh(goldRimGeo, goldMat);
+            // Gold inner rim
+            const goldRim = new THREE.Mesh(
+                new THREE.TorusGeometry(2.7, 0.02, 8, 64),
+                new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.9, roughness: 0.2 })
+            );
             goldRim.rotation.x = Math.PI / 2;
-            goldRim.position.y = 0.81;
-            tableGroup.add(goldRim);
+            goldRim.position.y = 0.82;
+            scene.add(goldRim);
 
-            // Table pedestal
-            const pedestalGeo = new THREE.CylinderGeometry(0.8, 1.0, 0.72, 32);
-            const pedestal = new THREE.Mesh(pedestalGeo, woodMat);
-            pedestal.position.y = 0.36;
-            pedestal.castShadow = true;
-            tableGroup.add(pedestal);
-
-            // Base
-            const baseGeo = new THREE.CylinderGeometry(1.2, 1.3, 0.1, 32);
-            const base = new THREE.Mesh(baseGeo, woodMat);
-            base.position.y = 0.05;
+            // Table base
+            const base = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.8, 1.0, 0.75, 32),
+                new THREE.MeshStandardMaterial({ color: 0x3d1f0d, roughness: 0.5 })
+            );
+            base.position.y = 0.375;
             base.castShadow = true;
-            base.receiveShadow = true;
-            tableGroup.add(base);
+            scene.add(base);
 
-            scene.add(tableGroup);
+            // Deck
+            createDeckMesh();
         }
 
         function createLighting() {
-            // Ambient
-            const ambient = new THREE.AmbientLight(0xffffff, 0.2);
-            scene.add(ambient);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.25));
 
-            // Main overhead lamp
-            const mainLight = new THREE.SpotLight(0xfff5e0, 3);
-            mainLight.position.set(0, 5, 0);
-            mainLight.angle = Math.PI / 4;
-            mainLight.penumbra = 0.6;
-            mainLight.decay = 1.5;
-            mainLight.distance = 12;
-            mainLight.castShadow = true;
-            mainLight.shadow.mapSize.width = 2048;
-            mainLight.shadow.mapSize.height = 2048;
-            mainLight.shadow.camera.near = 1;
-            mainLight.shadow.camera.far = 12;
-            mainLight.shadow.bias = -0.0001;
-            scene.add(mainLight);
+            const main = new THREE.SpotLight(0xfff5e0, 2.5);
+            main.position.set(0, 6, 0);
+            main.angle = Math.PI / 3.5;
+            main.penumbra = 0.5;
+            main.castShadow = true;
+            main.shadow.mapSize.width = 2048;
+            main.shadow.mapSize.height = 2048;
+            scene.add(main);
 
             // Lamp shade
-            const shadeGeo = new THREE.ConeGeometry(0.7, 0.4, 32, 1, true);
-            const shadeMat = new THREE.MeshStandardMaterial({
-                color: 0x1a5c1a,
-                side: THREE.DoubleSide,
-                roughness: 0.6,
-                metalness: 0.4,
-                emissive: 0x0a2a0a,
-                emissiveIntensity: 0.3
-            });
-            const shade = new THREE.Mesh(shadeGeo, shadeMat);
-            shade.position.set(0, 4.3, 0);
+            const shade = new THREE.Mesh(
+                new THREE.ConeGeometry(0.8, 0.5, 32, 1, true),
+                new THREE.MeshStandardMaterial({ color: 0x1a5c1a, side: THREE.DoubleSide, emissive: 0x0a2a0a, emissiveIntensity: 0.3 })
+            );
+            shade.position.set(0, 5.2, 0);
             shade.rotation.x = Math.PI;
             scene.add(shade);
 
-            // Gold trim on lamp
-            const lampRimGeo = new THREE.TorusGeometry(0.7, 0.03, 8, 32);
-            const lampRimMat = new THREE.MeshStandardMaterial({
-                color: 0xffd700,
-                roughness: 0.2,
-                metalness: 0.9
-            });
-            const lampRim = new THREE.Mesh(lampRimGeo, lampRimMat);
-            lampRim.position.set(0, 4.1, 0);
-            lampRim.rotation.x = Math.PI / 2;
-            scene.add(lampRim);
-
             // Accent lights
-            const accentColors = [0xff6b6b, 0x6b6bff, 0xffd700];
-            accentColors.forEach((color, i) => {
-                const light = new THREE.PointLight(color, 0.4, 8);
-                const angle = (i / 3) * Math.PI * 2;
-                light.position.set(Math.cos(angle) * 4, 3, Math.sin(angle) * 4);
+            const colors = [0xff6b6b, 0x6b6bff, 0xffd700];
+            colors.forEach((c, i) => {
+                const light = new THREE.PointLight(c, 0.3, 10);
+                const a = (i / 3) * Math.PI * 2;
+                light.position.set(Math.cos(a) * 5, 3, Math.sin(a) * 5);
                 scene.add(light);
             });
 
-            // Fill light from player
-            const fillLight = new THREE.PointLight(0xffffff, 0.3, 6);
-            fillLight.position.set(0, 2, 3.5);
-            scene.add(fillLight);
-        }
-
-        function createParticles() {
-            const particleCount = 200;
-            const positions = new Float32Array(particleCount * 3);
-
-            for (let i = 0; i < particleCount; i++) {
-                positions[i * 3] = (Math.random() - 0.5) * 15;
-                positions[i * 3 + 1] = Math.random() * 8;
-                positions[i * 3 + 2] = (Math.random() - 0.5) * 15;
-            }
-
-            const particleGeo = new THREE.BufferGeometry();
-            particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-            const particleMat = new THREE.PointsMaterial({
-                color: 0xffd700,
-                size: 0.02,
-                transparent: true,
-                opacity: 0.4,
-                blending: THREE.AdditiveBlending
-            });
-
-            const particles = new THREE.Points(particleGeo, particleMat);
-            particles.userData.isParticles = true;
-            scene.add(particles);
+            scene.add(new THREE.PointLight(0xffffff, 0.4, 8).position.set(0, 2, 4));
         }
 
         function createDeckMesh() {
-            const deckGroup = new THREE.Group();
-
-            // Stack of cards lying flat on table (XZ plane, thin in Y)
-            for (let i = 0; i < 20; i++) {
-                const cardGeo = new THREE.BoxGeometry(CARD_WIDTH, 0.003, CARD_HEIGHT);
-                const cardMat = new THREE.MeshStandardMaterial({
-                    color: 0xcc0000,
-                    roughness: 0.25,
-                    metalness: 0.15
-                });
-                const card = new THREE.Mesh(cardGeo, cardMat);
-                card.position.y = i * 0.003;
-                card.rotation.y = (Math.random() - 0.5) * 0.03;
+            const deck = new THREE.Group();
+            for (let i = 0; i < 25; i++) {
+                const card = new THREE.Mesh(
+                    new THREE.BoxGeometry(CARD_W, 0.002, CARD_H),
+                    new THREE.MeshStandardMaterial({ color: 0xcc0000, roughness: 0.3 })
+                );
+                card.position.y = i * 0.002;
                 card.castShadow = true;
-                deckGroup.add(card);
+                deck.add(card);
             }
-
-            // Gold Monopoly design on top
-            const topDesignGeo = new THREE.PlaneGeometry(CARD_WIDTH * 0.6, CARD_HEIGHT * 0.4);
-            const topDesignMat = new THREE.MeshStandardMaterial({
-                color: 0xffd700,
-                roughness: 0.2,
-                metalness: 0.8,
-                emissive: 0xffd700,
-                emissiveIntensity: 0.3
-            });
-            const topDesign = new THREE.Mesh(topDesignGeo, topDesignMat);
-            topDesign.position.y = 0.065;
-            topDesign.rotation.x = -Math.PI / 2;
-            deckGroup.add(topDesign);
-
-            // "DEAL" text indicator circle
-            const dealCircle = new THREE.Mesh(
-                new THREE.RingGeometry(0.04, 0.05, 16),
-                new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8 })
+            // Top design
+            const top = new THREE.Mesh(
+                new THREE.PlaneGeometry(CARD_W * 0.7, CARD_H * 0.5),
+                new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, emissive: 0xffd700, emissiveIntensity: 0.2 })
             );
-            dealCircle.position.y = 0.066;
-            dealCircle.rotation.x = -Math.PI / 2;
-            deckGroup.add(dealCircle);
+            top.position.y = 0.055;
+            top.rotation.x = -Math.PI / 2;
+            deck.add(top);
 
-            deckGroup.position.set(-0.5, 0.82, -0.2);
-            deckGroup.userData.isDeck = true;
-            scene.add(deckGroup);
+            deck.position.set(0, 0.82, 0);
+            scene.add(deck);
         }
 
-        // ===================== CARD CREATION =====================
-        function createCard3D(cardData, index) {
-            const group = new THREE.Group();
+        // ==================== CARD TEXTURE ====================
+        function createCardTexture(cardData) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 360;
+            const ctx = canvas.getContext('2d');
 
-            // Get card color based on type
-            let mainColor = 0xffffff;
-            let isRainbow = false;
+            // Background
+            ctx.fillStyle = '#f5f5f5';
+            ctx.fillRect(0, 0, 256, 360);
+
+            // Get color
+            let color = '#888888';
+            let headerText = '';
+            let mainText = cardData.name || '';
+            let valueText = `$${cardData.value}M`;
 
             if (cardData.type === 'property') {
-                mainColor = COLOR_VALUES[cardData.color]?.hex || 0xffffff;
+                const hex = COLOR_HEX[cardData.color];
+                color = '#' + hex.toString(16).padStart(6, '0');
+                headerText = COLOR_NAMES[cardData.color] || cardData.color;
             } else if (cardData.type === 'money') {
-                mainColor = 0x228B22;
+                color = '#228B22';
+                headerText = 'MONEY';
+                mainText = `$${cardData.value}M`;
             } else if (cardData.type === 'action') {
-                mainColor = 0xFFD700;
+                color = '#FFD700';
+                headerText = 'ACTION';
             } else if (cardData.type === 'rent') {
-                mainColor = 0xDC143C;
+                color = '#DC143C';
+                headerText = 'RENT';
+                mainText = cardData.colors[0] === 'wild' ? 'WILD RENT' : 'RENT CARD';
             } else if (cardData.type === 'wild') {
-                if (cardData.colors.includes('wild') || cardData.colors.length > 2) {
-                    isRainbow = true;
-                    mainColor = 0x9370DB;
+                color = '#9370DB';
+                headerText = 'WILD';
+                mainText = cardData.colors[0] === 'wild' ? 'ANY COLOR' : 'WILD PROPERTY';
+            }
+
+            // Header bar
+            ctx.fillStyle = color;
+            ctx.fillRect(0, 0, 256, 110);
+
+            // Header text
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 22px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(headerText, 128, 40);
+
+            // Border
+            ctx.strokeStyle = '#222';
+            ctx.lineWidth = 6;
+            ctx.strokeRect(3, 3, 250, 354);
+
+            // Main text (card name)
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 20px Arial';
+            const words = mainText.split(' ');
+            let y = 160;
+            let line = '';
+            words.forEach(word => {
+                const test = line + word + ' ';
+                if (ctx.measureText(test).width > 220) {
+                    ctx.fillText(line.trim(), 128, y);
+                    line = word + ' ';
+                    y += 26;
                 } else {
-                    mainColor = COLOR_VALUES[cardData.colors[0]]?.hex || 0x3498DB;
+                    line = test;
                 }
+            });
+            ctx.fillText(line.trim(), 128, y);
+
+            // Description for actions
+            if (cardData.description) {
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#666';
+                ctx.fillText(cardData.description, 128, y + 40);
             }
 
-            // Card body - XY plane (faces camera at +Z)
-            const cardGeo = new THREE.BoxGeometry(CARD_WIDTH, CARD_HEIGHT, CARD_DEPTH);
+            // Value circle
+            ctx.beginPath();
+            ctx.arc(40, 320, 28, 0, Math.PI * 2);
+            ctx.fillStyle = '#228B22';
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 18px Arial';
+            ctx.fillText(valueText, 40, 326);
 
-            // White front face
+            // Card type icon in header
+            if (cardData.type === 'money') {
+                ctx.font = 'bold 48px Arial';
+                ctx.fillText('$', 128, 90);
+            } else if (cardData.type === 'action') {
+                ctx.font = '36px Arial';
+                ctx.fillText('⚡', 128, 90);
+            } else if (cardData.type === 'rent') {
+                ctx.font = '36px Arial';
+                ctx.fillText('🏠', 128, 90);
+            }
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.anisotropy = 4;
+            return texture;
+        }
+
+        function createCard3D(cardData, forTable = false) {
+            const group = new THREE.Group();
+
+            const texture = createCardTexture(cardData);
+
+            // Front face with texture
+            const frontGeo = new THREE.PlaneGeometry(CARD_W, CARD_H);
             const frontMat = new THREE.MeshStandardMaterial({
-                color: 0xf8f8f8,
-                roughness: 0.2,
-                metalness: 0.1
-            });
-            const cardMesh = new THREE.Mesh(cardGeo, frontMat);
-            cardMesh.castShadow = true;
-            cardMesh.receiveShadow = true;
-            group.add(cardMesh);
-
-            // Colored top section (header) on front face
-            const headerGeo = new THREE.PlaneGeometry(CARD_WIDTH * 0.92, CARD_HEIGHT * 0.35);
-            const headerMat = new THREE.MeshStandardMaterial({
-                color: mainColor,
-                roughness: 0.25,
-                metalness: 0.3,
-                emissive: mainColor,
-                emissiveIntensity: 0.15
-            });
-            const header = new THREE.Mesh(headerGeo, headerMat);
-            header.position.set(0, CARD_HEIGHT * 0.28, CARD_DEPTH / 2 + 0.001);
-            group.add(header);
-
-            // Card border frame
-            const borderGeo = new THREE.BoxGeometry(CARD_WIDTH + 0.008, CARD_HEIGHT + 0.008, CARD_DEPTH * 0.5);
-            const borderMat = new THREE.MeshStandardMaterial({
-                color: 0x1a1a1a,
-                roughness: 0.5,
-                metalness: 0.4
-            });
-            const border = new THREE.Mesh(borderGeo, borderMat);
-            border.position.z = -CARD_DEPTH * 0.3;
-            group.add(border);
-
-            // Value circle in corner
-            const valueGeo = new THREE.CircleGeometry(0.025, 16);
-            const valueMat = new THREE.MeshStandardMaterial({
-                color: 0x228B22,
-                roughness: 0.2,
-                metalness: 0.5,
-                emissive: 0x228B22,
-                emissiveIntensity: 0.3
-            });
-            const valueCircle = new THREE.Mesh(valueGeo, valueMat);
-            valueCircle.position.set(-CARD_WIDTH * 0.38, -CARD_HEIGHT * 0.38, CARD_DEPTH / 2 + 0.002);
-            group.add(valueCircle);
-
-            // Center icon/design based on card type
-            let iconColor = mainColor;
-            const iconGeo = new THREE.CircleGeometry(0.04, 6); // Hexagon-ish
-            const iconMat = new THREE.MeshStandardMaterial({
-                color: iconColor,
+                map: texture,
                 roughness: 0.3,
-                metalness: 0.4,
-                emissive: iconColor,
-                emissiveIntensity: 0.2
+                metalness: 0.05
             });
-            const icon = new THREE.Mesh(iconGeo, iconMat);
-            icon.position.set(0, -CARD_HEIGHT * 0.1, CARD_DEPTH / 2 + 0.002);
-            group.add(icon);
+            const front = new THREE.Mesh(frontGeo, frontMat);
+            front.position.z = CARD_D / 2 + 0.001;
+            group.add(front);
 
-            // Rainbow shimmer for special cards
-            if (isRainbow) {
-                const shimmerGeo = new THREE.PlaneGeometry(CARD_WIDTH * 0.9, CARD_HEIGHT * 0.9);
-                const shimmerMat = new THREE.MeshStandardMaterial({
-                    color: 0xffffff,
-                    transparent: true,
-                    opacity: 0.15,
-                    roughness: 0.0,
-                    metalness: 1.0
-                });
-                const shimmer = new THREE.Mesh(shimmerGeo, shimmerMat);
-                shimmer.position.z = CARD_DEPTH / 2 + 0.003;
-                group.add(shimmer);
-            }
+            // Back face (red)
+            const backGeo = new THREE.PlaneGeometry(CARD_W, CARD_H);
+            const backMat = new THREE.MeshStandardMaterial({ color: 0xcc0000, roughness: 0.4 });
+            const back = new THREE.Mesh(backGeo, backMat);
+            back.position.z = -CARD_D / 2 - 0.001;
+            back.rotation.y = Math.PI;
+            group.add(back);
 
-            // Store card data
+            // Edge
+            const edgeGeo = new THREE.BoxGeometry(CARD_W + 0.005, CARD_H + 0.005, CARD_D);
+            const edgeMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.5 });
+            const edge = new THREE.Mesh(edgeGeo, edgeMat);
+            group.add(edge);
+
+            group.castShadow = true;
             group.userData = {
-                cardData: cardData,
-                index: index,
+                cardData,
+                isCard: true,
                 originalPosition: new THREE.Vector3(),
-                originalRotation: new THREE.Euler(),
-                isCard: true
+                originalRotation: new THREE.Euler()
             };
 
             return group;
         }
 
+        function createCardBack() {
+            const group = new THREE.Group();
+            const geo = new THREE.BoxGeometry(CARD_W, CARD_H, CARD_D);
+            const mat = new THREE.MeshStandardMaterial({ color: 0xcc0000, roughness: 0.3 });
+            group.add(new THREE.Mesh(geo, mat));
+            return group;
+        }
+
+        // ==================== RENDER TABLE ====================
+        function renderTable() {
+            // Clear old meshes
+            propertyMeshes.forEach(m => scene.remove(m));
+            bankMeshes.forEach(m => scene.remove(m));
+            opponentMeshes.forEach(m => scene.remove(m));
+            propertyMeshes = [];
+            bankMeshes = [];
+            opponentMeshes = [];
+
+            const player = game.players[game.currentPlayer];
+
+            // Player's properties (in front, organized by color)
+            let propX = -0.8;
+            for (const color in player.properties) {
+                const cards = player.properties[color];
+                cards.forEach((card, i) => {
+                    const mesh = createCard3D(card, true);
+                    mesh.position.set(propX, 0.83 + i * 0.003, 1.2 + i * 0.02);
+                    mesh.rotation.x = -Math.PI / 2.5;
+                    propertyMeshes.push(mesh);
+                    scene.add(mesh);
+                });
+                propX += 0.3;
+            }
+
+            // Player's bank (right side)
+            player.bank.forEach((card, i) => {
+                const mesh = createCard3D(card, true);
+                mesh.position.set(1.5 + (i % 4) * 0.08, 0.83 + Math.floor(i / 4) * 0.003, 1.0 + (i % 4) * 0.02);
+                mesh.rotation.x = -Math.PI / 2.2;
+                mesh.rotation.z = 0.1;
+                bankMeshes.push(mesh);
+                scene.add(mesh);
+            });
+
+            // Opponents (across the table)
+            game.players.forEach((opp, idx) => {
+                if (idx === game.currentPlayer) return;
+
+                const angle = Math.PI + ((idx - game.currentPlayer) / game.players.length) * Math.PI * 0.6;
+                const dist = 2.0;
+                const ox = Math.sin(angle) * dist;
+                const oz = Math.cos(angle) * dist;
+
+                // Opponent's card backs (hand)
+                for (let i = 0; i < Math.min(opp.hand.length, 7); i++) {
+                    const card = createCardBack();
+                    card.position.set(ox + (i - 3) * 0.1, 0.85, oz);
+                    card.rotation.x = -Math.PI / 2;
+                    card.rotation.z = Math.PI;
+                    card.scale.set(0.6, 0.6, 0.6);
+                    opponentMeshes.push(card);
+                    scene.add(card);
+                }
+
+                // Opponent's properties
+                let oppPropX = ox - 0.4;
+                for (const color in opp.properties) {
+                    opp.properties[color].forEach((card, i) => {
+                        const mesh = createCard3D(card, true);
+                        mesh.position.set(oppPropX, 0.83 + i * 0.002, oz + 0.4);
+                        mesh.rotation.x = -Math.PI / 2;
+                        mesh.scale.set(0.5, 0.5, 0.5);
+                        opponentMeshes.push(mesh);
+                        scene.add(mesh);
+                    });
+                    oppPropX += 0.2;
+                }
+
+                // Opponent's bank
+                opp.bank.forEach((card, i) => {
+                    const mesh = createCard3D(card, true);
+                    mesh.position.set(ox + 0.6 + (i % 3) * 0.06, 0.83 + Math.floor(i / 3) * 0.002, oz + 0.3);
+                    mesh.rotation.x = -Math.PI / 2;
+                    mesh.scale.set(0.4, 0.4, 0.4);
+                    opponentMeshes.push(mesh);
+                    scene.add(mesh);
+                });
+            });
+        }
+
         function createHandCards() {
-            // Remove existing hand cards
-            handCards.forEach(card => scene.remove(card));
+            handCards.forEach(c => scene.remove(c));
             handCards = [];
 
             const player = game.players[game.currentPlayer];
-            if (!player || !player.hand) return;
+            if (!player) return;
 
             const count = player.hand.length;
-            const spreadWidth = Math.min(count * 0.12, 1.2); // Cards spread horizontally
-            const arcHeight = 0.08;
+            const spread = Math.min(count * 0.13, 1.4);
 
             player.hand.forEach((cardData, i) => {
-                const card = createCard3D(cardData, i);
-
-                // Position cards in a fan at bottom of screen, IN FRONT of camera
-                // Camera is at z=2.8, so cards should be at z < 2.8
+                const card = createCard3D(cardData);
                 const t = count > 1 ? i / (count - 1) : 0.5;
-                const x = (t - 0.5) * spreadWidth;
-                const y = 1.1 + (1 - Math.abs(t - 0.5) * 2) * arcHeight; // Arc shape
-                const z = 2.2; // In front of camera (camera at z=2.8)
+                const x = (t - 0.5) * spread;
+                const y = 1.3 + (0.25 - Math.pow(t - 0.5, 2)) * 0.3;
+                const z = 2.8;
 
                 card.position.set(x, y, z);
-
-                // Tilt cards to face the player (slight backward lean)
-                card.rotation.x = -0.4; // Lean back toward player
-                card.rotation.y = (t - 0.5) * -0.25; // Fan out
-                card.rotation.z = (t - 0.5) * 0.1; // Slight tilt
+                card.rotation.x = -0.35;
+                card.rotation.y = (t - 0.5) * -0.2;
+                card.rotation.z = (t - 0.5) * 0.08;
 
                 card.userData.originalPosition.copy(card.position);
                 card.userData.originalRotation.copy(card.rotation);
+                card.userData.index = i;
 
                 handCards.push(card);
                 scene.add(card);
             });
         }
 
-        // ===================== GAME LOGIC =====================
+        // ==================== GAME LOGIC ====================
         function createDeck() {
             const deck = [];
             let id = 0;
 
-            // Properties
-            CARD_DATA.properties.forEach(prop => {
-                deck.push({
-                    id: id++,
-                    type: 'property',
-                    name: prop.name,
-                    color: prop.color,
-                    value: prop.value
-                });
-            });
-
-            // Money
+            CARD_DATA.properties.forEach(p => deck.push({ id: id++, type: 'property', ...p }));
             CARD_DATA.money.forEach(m => {
-                for (let i = 0; i < m.count; i++) {
-                    deck.push({
-                        id: id++,
-                        type: 'money',
-                        name: `$${m.value}M`,
-                        value: m.value
-                    });
-                }
+                for (let i = 0; i < m.count; i++) deck.push({ id: id++, type: 'money', name: `$${m.value}M`, value: m.value });
             });
-
-            // Actions
             CARD_DATA.actions.forEach(a => {
-                for (let i = 0; i < a.count; i++) {
-                    deck.push({
-                        id: id++,
-                        type: 'action',
-                        name: a.name,
-                        description: a.desc,
-                        value: a.value
-                    });
-                }
+                for (let i = 0; i < a.count; i++) deck.push({ id: id++, type: 'action', name: a.name, description: a.desc, value: a.value });
             });
-
-            // Rent
             CARD_DATA.rent.forEach(r => {
-                for (let i = 0; i < r.count; i++) {
-                    deck.push({
-                        id: id++,
-                        type: 'rent',
-                        name: r.colors[0] === 'wild' ? 'Wild Rent' : `Rent Card`,
-                        colors: r.colors,
-                        value: r.value
-                    });
-                }
+                for (let i = 0; i < r.count; i++) deck.push({ id: id++, type: 'rent', name: 'Rent', colors: r.colors, value: r.value });
             });
-
-            // Wild properties
             CARD_DATA.wilds.forEach(w => {
-                for (let i = 0; i < w.count; i++) {
-                    deck.push({
-                        id: id++,
-                        type: 'wild',
-                        name: w.colors[0] === 'wild' ? 'Rainbow Wild' : 'Wild Property',
-                        colors: w.colors,
-                        value: 0
-                    });
-                }
+                for (let i = 0; i < w.count; i++) deck.push({ id: id++, type: 'wild', name: 'Wild', colors: w.colors, value: 0 });
             });
 
             // Shuffle
@@ -1004,462 +774,250 @@
                 const j = Math.floor(Math.random() * (i + 1));
                 [deck[i], deck[j]] = [deck[j], deck[i]];
             }
-
             return deck;
         }
 
         function startGame() {
-            const playerCount = parseInt(document.getElementById('player-count').value);
-
+            const count = parseInt(document.getElementById('player-count').value);
             game.deck = createDeck();
             game.players = [];
             game.currentPlayer = 0;
             game.phase = 'draw';
             game.actions = 3;
             game.turnDrawn = false;
-            game.discardPile = [];
 
-            // Create players
-            for (let i = 0; i < playerCount; i++) {
-                game.players.push({
-                    id: i,
-                    name: `Player ${i + 1}`,
-                    hand: [],
-                    properties: {},
-                    bank: []
-                });
-
-                // Deal 5 cards
-                for (let j = 0; j < 5; j++) {
-                    if (game.deck.length > 0) {
-                        game.players[i].hand.push(game.deck.pop());
-                    }
-                }
+            for (let i = 0; i < count; i++) {
+                const p = { name: `Player ${i + 1}`, hand: [], properties: {}, bank: [] };
+                for (let j = 0; j < 5; j++) if (game.deck.length) p.hand.push(game.deck.pop());
+                game.players.push(p);
             }
 
             document.getElementById('setup-screen').classList.add('hidden');
             createHandCards();
+            renderTable();
             updateUI();
         }
 
         function drawCards() {
             if (game.turnDrawn) return;
-
-            const player = game.players[game.currentPlayer];
-            const cardsToDraw = player.hand.length === 0 ? 5 : 2;
-
-            for (let i = 0; i < cardsToDraw; i++) {
-                if (game.deck.length > 0) {
-                    player.hand.push(game.deck.pop());
-                }
-            }
-
+            const p = game.players[game.currentPlayer];
+            const n = p.hand.length === 0 ? 5 : 2;
+            for (let i = 0; i < n; i++) if (game.deck.length) p.hand.push(game.deck.pop());
             game.turnDrawn = true;
             game.phase = 'play';
-
             createHandCards();
-            animateHandDeal();
             updateUI();
         }
 
-        function animateHandDeal() {
-            handCards.forEach((card, i) => {
-                const originalPos = card.userData.originalPosition.clone();
-                const originalRot = card.userData.originalRotation.clone();
-
-                // Start position (from deck on table)
-                card.position.set(-0.5, 0.9, -0.2);
-                card.rotation.set(-Math.PI / 2, 0, 0); // Lying flat
-
-                setTimeout(() => {
-                    animateTo(card, originalPos, originalRot, 350);
-                }, i * 100);
-            });
-        }
-
-        function playSelectedCard() {
+        function playCard() {
             if (!selectedCard || game.actions <= 0) return;
+            const p = game.players[game.currentPlayer];
+            const data = selectedCard.userData.cardData;
+            const idx = p.hand.findIndex(c => c.id === data.id);
+            if (idx === -1) return;
 
-            const player = game.players[game.currentPlayer];
-            const cardData = selectedCard.userData.cardData;
-            const cardIndex = player.hand.findIndex(c => c.id === cardData.id);
-
-            if (cardIndex === -1) return;
-
-            // Handle card type
-            if (cardData.type === 'property') {
-                if (!player.properties[cardData.color]) {
-                    player.properties[cardData.color] = [];
-                }
-                player.properties[cardData.color].push(cardData);
-            } else if (cardData.type === 'wild') {
-                const color = cardData.colors[0] === 'wild' ? 'brown' : cardData.colors[0];
-                if (!player.properties[color]) {
-                    player.properties[color] = [];
-                }
-                player.properties[color].push({ ...cardData, assignedColor: color });
-            } else if (cardData.type === 'action') {
-                if (cardData.name === 'Pass Go') {
-                    for (let i = 0; i < 2; i++) {
-                        if (game.deck.length > 0) {
-                            player.hand.push(game.deck.pop());
-                        }
-                    }
-                }
-                game.discardPile.push(cardData);
-            } else {
-                game.discardPile.push(cardData);
+            if (data.type === 'property' || data.type === 'wild') {
+                const color = data.color || (data.colors[0] === 'wild' ? 'brown' : data.colors[0]);
+                if (!p.properties[color]) p.properties[color] = [];
+                p.properties[color].push(data);
+            } else if (data.type === 'action' && data.name === 'Pass Go') {
+                for (let i = 0; i < 2; i++) if (game.deck.length) p.hand.push(game.deck.pop());
             }
 
-            // Remove from hand
-            player.hand.splice(cardIndex, 1);
+            p.hand.splice(idx, 1);
             game.actions--;
-
-            // Animate to table
-            animateCardToTable(selectedCard);
-
             selectedCard = null;
-
-            setTimeout(() => {
-                createHandCards();
-                updateUI();
-                checkWinCondition();
-            }, 400);
+            createHandCards();
+            renderTable();
+            updateUI();
+            checkWin();
         }
 
-        function bankSelectedCard() {
+        function bankCard() {
             if (!selectedCard || game.actions <= 0) return;
+            const p = game.players[game.currentPlayer];
+            const data = selectedCard.userData.cardData;
+            const idx = p.hand.findIndex(c => c.id === data.id);
+            if (idx === -1) return;
 
-            const player = game.players[game.currentPlayer];
-            const cardData = selectedCard.userData.cardData;
-            const cardIndex = player.hand.findIndex(c => c.id === cardData.id);
-
-            if (cardIndex === -1) return;
-
-            player.bank.push(cardData);
-            player.hand.splice(cardIndex, 1);
+            p.bank.push(data);
+            p.hand.splice(idx, 1);
             game.actions--;
-
-            animateCardToTable(selectedCard);
-
             selectedCard = null;
-
-            setTimeout(() => {
-                createHandCards();
-                updateUI();
-            }, 400);
-        }
-
-        function animateCardToTable(card) {
-            const targetPos = new THREE.Vector3(
-                (Math.random() - 0.5) * 0.4,
-                0.85,
-                (Math.random() - 0.5) * 0.3 - 0.1
-            );
-            const targetRot = new THREE.Euler(-Math.PI / 2, Math.random() * 0.2, 0);
-
-            animateTo(card, targetPos, targetRot, 300);
-
-            setTimeout(() => {
-                scene.remove(card);
-            }, 350);
-        }
-
-        function animateTo(obj, targetPos, targetRot, duration) {
-            const startPos = obj.position.clone();
-            const startRot = new THREE.Euler().copy(obj.rotation);
-            const startTime = Date.now();
-
-            function update() {
-                const elapsed = Date.now() - startTime;
-                const t = Math.min(elapsed / duration, 1);
-                const ease = 1 - Math.pow(1 - t, 3); // easeOutCubic
-
-                obj.position.lerpVectors(startPos, targetPos, ease);
-                obj.rotation.x = startRot.x + (targetRot.x - startRot.x) * ease;
-                obj.rotation.y = startRot.y + (targetRot.y - startRot.y) * ease;
-                obj.rotation.z = startRot.z + (targetRot.z - startRot.z) * ease;
-
-                if (t < 1) requestAnimationFrame(update);
-            }
-            update();
+            createHandCards();
+            renderTable();
+            updateUI();
         }
 
         function endTurn() {
-            const player = game.players[game.currentPlayer];
-
-            // Check hand limit
-            if (player.hand.length > 7) {
+            const p = game.players[game.currentPlayer];
+            if (p.hand.length > 7) {
+                document.getElementById('instructions').textContent = 'Too many cards! Click cards to discard down to 7';
                 game.phase = 'discard';
-                document.getElementById('instructions').textContent =
-                    `Discard ${player.hand.length - 7} cards - Click cards to discard`;
                 return;
             }
-
-            nextTurn();
-        }
-
-        function nextTurn() {
             game.currentPlayer = (game.currentPlayer + 1) % game.players.length;
             game.actions = 3;
             game.phase = 'draw';
             game.turnDrawn = false;
-
             selectedCard = null;
             createHandCards();
+            renderTable();
             updateUI();
         }
 
-        function checkWinCondition() {
-            const player = game.players[game.currentPlayer];
-            let completeSets = 0;
-
-            for (const color in player.properties) {
-                const required = COLOR_VALUES[color]?.size || 3;
-                if (player.properties[color].length >= required) {
-                    completeSets++;
-                }
+        function checkWin() {
+            const p = game.players[game.currentPlayer];
+            let sets = 0;
+            for (const c in p.properties) {
+                if (p.properties[c].length >= SET_SIZE[c]) sets++;
             }
-
-            if (completeSets >= 3) {
-                document.getElementById('winner-name').textContent = `${player.name} Wins!`;
+            if (sets >= 3) {
+                document.getElementById('winner-name').textContent = `${p.name} Wins!`;
                 document.getElementById('winner-screen').classList.add('visible');
             }
         }
 
         function updateUI() {
-            const player = game.players[game.currentPlayer];
-            if (!player) return;
-
-            document.getElementById('player-name').textContent = player.name;
+            const p = game.players[game.currentPlayer];
+            document.getElementById('player-name').textContent = p.name;
             document.getElementById('hud-actions').textContent = game.actions;
-            document.getElementById('hud-cards').textContent = player.hand.length;
+            document.getElementById('hud-cards').textContent = p.hand.length;
 
-            // Calculate sets
-            let completeSets = 0;
-            for (const color in player.properties) {
-                const required = COLOR_VALUES[color]?.size || 3;
-                if (player.properties[color].length >= required) {
-                    completeSets++;
-                }
-            }
-            document.getElementById('hud-sets').textContent = `${completeSets}/3`;
+            let sets = 0;
+            for (const c in p.properties) if (p.properties[c].length >= SET_SIZE[c]) sets++;
+            document.getElementById('hud-sets').textContent = `${sets}/3`;
 
-            // Bank total
-            const bankTotal = player.bank.reduce((sum, c) => sum + (c.value || 0), 0);
-            document.getElementById('hud-bank').textContent = `$${bankTotal}M`;
+            const bank = p.bank.reduce((s, c) => s + (c.value || 0), 0);
+            document.getElementById('hud-bank').textContent = `$${bank}M`;
 
-            // Properties panel
-            let propHtml = '';
-            for (const color in player.properties) {
-                const cards = player.properties[color];
-                const info = COLOR_VALUES[color];
-                const isComplete = cards.length >= (info?.size || 3);
-                propHtml += `
-                    <div class="prop-set ${isComplete ? 'complete' : ''}">
-                        <div class="prop-color" style="background: #${info?.hex.toString(16).padStart(6, '0')}"></div>
-                        <span class="prop-count">${cards.length}/${info?.size || 3} ${info?.name || color}</span>
-                    </div>
-                `;
-            }
-            document.getElementById('prop-list').innerHTML = propHtml || '<span style="opacity:0.5">None yet</span>';
-
-            // Buttons
             document.getElementById('btn-draw').disabled = game.turnDrawn;
             document.getElementById('btn-play').disabled = !selectedCard || game.actions <= 0;
             document.getElementById('btn-bank').disabled = !selectedCard || game.actions <= 0;
             document.getElementById('btn-end').disabled = !game.turnDrawn;
 
-            // Instructions
             if (!game.turnDrawn) {
-                document.getElementById('instructions').textContent = 'Press DRAW CARDS to start your turn';
+                document.getElementById('instructions').textContent = 'Click DRAW CARDS to start your turn';
             } else if (game.actions > 0) {
-                document.getElementById('instructions').textContent =
-                    selectedCard ? 'Press PLAY or BANK • Click elsewhere to deselect' :
-                    'Click a card to select it • ' + game.actions + ' actions remaining';
+                document.getElementById('instructions').textContent = selectedCard
+                    ? 'Click PLAY (property) or BANK (money) • Click card again to deselect'
+                    : `Select a card • ${game.actions} actions left`;
             } else {
-                document.getElementById('instructions').textContent = 'No actions left • Press END TURN';
+                document.getElementById('instructions').textContent = 'No actions left • Click END TURN';
             }
         }
 
-        // ===================== INTERACTION =====================
-        function onMouseMove(event) {
-            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+        // ==================== INTERACTION ====================
+        function onMouseMove(e) {
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(handCards, true);
+            const hits = raycaster.intersectObjects(handCards, true);
 
-            // Reset previous hover
-            if (hoveredCard && hoveredCard !== selectedCard) {
-                animateHover(hoveredCard, false);
-            }
-
+            if (hoveredCard && hoveredCard !== selectedCard) animateCard(hoveredCard, false, false);
             hoveredCard = null;
 
-            if (intersects.length > 0) {
-                let card = intersects[0].object;
-                while (card.parent && !card.userData.isCard) {
-                    card = card.parent;
-                }
-
-                if (card.userData.isCard) {
-                    hoveredCard = card;
-                    if (hoveredCard !== selectedCard) {
-                        animateHover(hoveredCard, true);
-                    }
-                    showTooltip(card.userData.cardData);
+            if (hits.length > 0) {
+                let obj = hits[0].object;
+                while (obj.parent && !obj.userData.isCard) obj = obj.parent;
+                if (obj.userData.isCard) {
+                    hoveredCard = obj;
+                    if (hoveredCard !== selectedCard) animateCard(hoveredCard, true, false);
+                    showTooltip(obj.userData.cardData);
                     document.body.style.cursor = 'pointer';
                     return;
                 }
             }
-
             hideTooltip();
             document.body.style.cursor = 'default';
         }
 
-        function onMouseClick() {
+        function onClick() {
             if (game.phase === 'discard' && hoveredCard) {
-                // Discard mode
-                const player = game.players[game.currentPlayer];
-                const cardData = hoveredCard.userData.cardData;
-                const idx = player.hand.findIndex(c => c.id === cardData.id);
+                const p = game.players[game.currentPlayer];
+                const idx = p.hand.findIndex(c => c.id === hoveredCard.userData.cardData.id);
                 if (idx !== -1) {
-                    player.hand.splice(idx, 1);
-                    scene.remove(hoveredCard);
-                    handCards = handCards.filter(c => c !== hoveredCard);
-
-                    if (player.hand.length <= 7) {
-                        nextTurn();
-                    } else {
-                        createHandCards();
-                        updateUI();
-                    }
+                    p.hand.splice(idx, 1);
+                    if (p.hand.length <= 7) endTurn();
+                    else { createHandCards(); updateUI(); }
                 }
                 return;
             }
 
             if (!hoveredCard) {
-                // Deselect
-                if (selectedCard) {
-                    animateSelect(selectedCard, false);
-                    selectedCard = null;
-                    updateUI();
-                }
+                if (selectedCard) { animateCard(selectedCard, false, false); selectedCard = null; updateUI(); }
                 return;
             }
 
-            // Select card
-            if (selectedCard && selectedCard !== hoveredCard) {
-                animateSelect(selectedCard, false);
-            }
-
             if (selectedCard === hoveredCard) {
-                // Deselect same card
-                animateSelect(selectedCard, false);
+                animateCard(selectedCard, false, false);
                 selectedCard = null;
             } else {
+                if (selectedCard) animateCard(selectedCard, false, false);
                 selectedCard = hoveredCard;
-                animateSelect(selectedCard, true);
+                animateCard(selectedCard, false, true);
             }
-
             updateUI();
         }
 
-        function onKeyDown(event) {
-            if (event.code === 'Space' && selectedCard) {
-                event.preventDefault();
-                playSelectedCard();
-            }
-        }
-
-        function animateHover(card, isHover) {
-            if (card === selectedCard) return;
-
+        function animateCard(card, hover, select) {
             const target = card.userData.originalPosition.clone();
-            if (isHover) {
-                target.y += 0.08; // Lift up
-                target.z += 0.1;  // Toward player
+            const rot = card.userData.originalRotation.clone();
+
+            if (select) {
+                target.y += 0.12;
+                target.z += 0.15;
+                rot.x = -0.15;
+            } else if (hover) {
+                target.y += 0.06;
+                target.z += 0.08;
             }
 
-            animateTo(card, target, card.userData.originalRotation, 120);
+            animateTo(card, target, rot, 150);
         }
 
-        function animateSelect(card, isSelect) {
-            const target = card.userData.originalPosition.clone();
-            const targetRot = card.userData.originalRotation.clone();
-
-            if (isSelect) {
-                target.y += 0.15;  // Lift higher
-                target.z += 0.2;   // Closer to player
-                targetRot.x = -0.2; // Stand more upright
-
-                // Glow effect
-                card.children.forEach(child => {
-                    if (child.material && child.material.emissive) {
-                        child.material.emissiveIntensity = 0.5;
-                    }
-                });
-            } else {
-                card.children.forEach(child => {
-                    if (child.material && child.material.emissive) {
-                        child.material.emissiveIntensity = 0.15;
-                    }
-                });
+        function animateTo(obj, pos, rot, dur) {
+            const sp = obj.position.clone(), sr = obj.rotation.clone();
+            const start = Date.now();
+            function update() {
+                const t = Math.min((Date.now() - start) / dur, 1);
+                const e = 1 - Math.pow(1 - t, 3);
+                obj.position.lerpVectors(sp, pos, e);
+                obj.rotation.x = sr.x + (rot.x - sr.x) * e;
+                obj.rotation.y = sr.y + (rot.y - sr.y) * e;
+                obj.rotation.z = sr.z + (rot.z - sr.z) * e;
+                if (t < 1) requestAnimationFrame(update);
             }
-
-            animateTo(card, target, targetRot, 180);
+            update();
         }
 
-        function showTooltip(cardData) {
-            const tooltip = document.getElementById('card-tooltip');
-            document.getElementById('tooltip-title').textContent = cardData.name;
-
+        function showTooltip(data) {
+            const t = document.getElementById('card-tooltip');
+            document.getElementById('tooltip-title').textContent = data.name;
             let desc = '';
-            if (cardData.type === 'property') {
-                desc = `${COLOR_VALUES[cardData.color]?.name || cardData.color} Property`;
-            } else if (cardData.type === 'money') {
-                desc = 'Money Card - Add to your bank';
-            } else if (cardData.type === 'action') {
-                desc = cardData.description || 'Action Card';
-            } else if (cardData.type === 'rent') {
-                desc = 'Charge rent to other players';
-            } else if (cardData.type === 'wild') {
-                desc = 'Wild Property - Can be any color: ' + cardData.colors.join(', ');
-            }
-
+            if (data.type === 'property') desc = `${COLOR_NAMES[data.color]} Property`;
+            else if (data.type === 'money') desc = 'Add to your bank';
+            else if (data.type === 'action') desc = data.description || 'Action card';
+            else if (data.type === 'rent') desc = 'Charge rent';
+            else if (data.type === 'wild') desc = 'Wild - any color: ' + data.colors.join(', ');
             document.getElementById('tooltip-desc').textContent = desc;
-            document.getElementById('tooltip-value').textContent = `Value: $${cardData.value}M`;
-
-            tooltip.classList.add('visible');
+            document.getElementById('tooltip-value').textContent = `Value: $${data.value}M`;
+            t.classList.add('visible');
         }
 
-        function hideTooltip() {
-            document.getElementById('card-tooltip').classList.remove('visible');
-        }
+        function hideTooltip() { document.getElementById('card-tooltip').classList.remove('visible'); }
 
-        function onWindowResize() {
+        function onResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        // ===================== ANIMATION LOOP =====================
         function animate() {
             requestAnimationFrame(animate);
-
-            // Subtle camera sway
-            const time = Date.now() * 0.0003;
-            camera.position.x = Math.sin(time) * 0.02;
-            camera.position.y = 1.8 + Math.sin(time * 1.3) * 0.01;
-
-            // Rotate particles
-            scene.children.forEach(child => {
-                if (child.userData.isParticles) {
-                    child.rotation.y += 0.0002;
-                }
-            });
-
+            const t = Date.now() * 0.0002;
+            camera.position.x = Math.sin(t) * 0.03;
             renderer.render(scene, camera);
         }
     </script>
