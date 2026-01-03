@@ -461,10 +461,10 @@
             turnDrawn: false
         };
 
-        // Card dimensions (poker card ratio)
-        const CARD_WIDTH = 0.635;
-        const CARD_HEIGHT = 0.889;
-        const CARD_DEPTH = 0.01;
+        // Card dimensions (poker card ratio) - standing upright
+        const CARD_WIDTH = 0.25;
+        const CARD_HEIGHT = 0.35;
+        const CARD_DEPTH = 0.004;
 
         // ===================== INITIALIZATION =====================
         init();
@@ -735,36 +735,45 @@
         function createDeckMesh() {
             const deckGroup = new THREE.Group();
 
-            // Stack of cards
-            for (let i = 0; i < 15; i++) {
-                const cardGeo = new THREE.BoxGeometry(CARD_WIDTH, CARD_DEPTH, CARD_HEIGHT);
+            // Stack of cards lying flat on table (XZ plane, thin in Y)
+            for (let i = 0; i < 20; i++) {
+                const cardGeo = new THREE.BoxGeometry(CARD_WIDTH, 0.003, CARD_HEIGHT);
                 const cardMat = new THREE.MeshStandardMaterial({
                     color: 0xcc0000,
-                    roughness: 0.3,
-                    metalness: 0.2
+                    roughness: 0.25,
+                    metalness: 0.15
                 });
                 const card = new THREE.Mesh(cardGeo, cardMat);
-                card.position.y = i * 0.004;
-                card.rotation.y = (Math.random() - 0.5) * 0.05;
+                card.position.y = i * 0.003;
+                card.rotation.y = (Math.random() - 0.5) * 0.03;
                 card.castShadow = true;
                 deckGroup.add(card);
             }
 
-            // Gold design on top card
-            const topDesignGeo = new THREE.PlaneGeometry(0.4, 0.4);
+            // Gold Monopoly design on top
+            const topDesignGeo = new THREE.PlaneGeometry(CARD_WIDTH * 0.6, CARD_HEIGHT * 0.4);
             const topDesignMat = new THREE.MeshStandardMaterial({
                 color: 0xffd700,
-                roughness: 0.3,
+                roughness: 0.2,
                 metalness: 0.8,
                 emissive: 0xffd700,
-                emissiveIntensity: 0.2
+                emissiveIntensity: 0.3
             });
             const topDesign = new THREE.Mesh(topDesignGeo, topDesignMat);
             topDesign.position.y = 0.065;
             topDesign.rotation.x = -Math.PI / 2;
             deckGroup.add(topDesign);
 
-            deckGroup.position.set(-0.9, 0.82, 0);
+            // "DEAL" text indicator circle
+            const dealCircle = new THREE.Mesh(
+                new THREE.RingGeometry(0.04, 0.05, 16),
+                new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8 })
+            );
+            dealCircle.position.y = 0.066;
+            dealCircle.rotation.x = -Math.PI / 2;
+            deckGroup.add(dealCircle);
+
+            deckGroup.position.set(-0.5, 0.82, -0.2);
             deckGroup.userData.isDeck = true;
             scene.add(deckGroup);
         }
@@ -773,7 +782,7 @@
         function createCard3D(cardData, index) {
             const group = new THREE.Group();
 
-            // Get card color
+            // Get card color based on type
             let mainColor = 0xffffff;
             let isRainbow = false;
 
@@ -794,70 +803,83 @@
                 }
             }
 
-            // Card base (white)
-            const baseGeo = new THREE.BoxGeometry(CARD_WIDTH, CARD_DEPTH, CARD_HEIGHT);
-            const baseMat = new THREE.MeshStandardMaterial({
-                color: 0xfafafa,
-                roughness: 0.15,
-                metalness: 0.05
-            });
-            const baseMesh = new THREE.Mesh(baseGeo, baseMat);
-            baseMesh.castShadow = true;
-            baseMesh.receiveShadow = true;
-            group.add(baseMesh);
+            // Card body - XY plane (faces camera at +Z)
+            const cardGeo = new THREE.BoxGeometry(CARD_WIDTH, CARD_HEIGHT, CARD_DEPTH);
 
-            // Colored header strip
-            const headerGeo = new THREE.BoxGeometry(CARD_WIDTH - 0.02, CARD_DEPTH + 0.002, CARD_HEIGHT * 0.35);
+            // White front face
+            const frontMat = new THREE.MeshStandardMaterial({
+                color: 0xf8f8f8,
+                roughness: 0.2,
+                metalness: 0.1
+            });
+            const cardMesh = new THREE.Mesh(cardGeo, frontMat);
+            cardMesh.castShadow = true;
+            cardMesh.receiveShadow = true;
+            group.add(cardMesh);
+
+            // Colored top section (header) on front face
+            const headerGeo = new THREE.PlaneGeometry(CARD_WIDTH * 0.92, CARD_HEIGHT * 0.35);
             const headerMat = new THREE.MeshStandardMaterial({
                 color: mainColor,
-                roughness: 0.3,
-                metalness: 0.4,
+                roughness: 0.25,
+                metalness: 0.3,
                 emissive: mainColor,
-                emissiveIntensity: 0.1
+                emissiveIntensity: 0.15
             });
             const header = new THREE.Mesh(headerGeo, headerMat);
-            header.position.y = CARD_DEPTH / 2 + 0.001;
-            header.position.z = -CARD_HEIGHT * 0.3;
+            header.position.set(0, CARD_HEIGHT * 0.28, CARD_DEPTH / 2 + 0.001);
             group.add(header);
 
-            // Card border/frame
-            const borderGeo = new THREE.BoxGeometry(CARD_WIDTH + 0.015, CARD_DEPTH - 0.002, CARD_HEIGHT + 0.015);
+            // Card border frame
+            const borderGeo = new THREE.BoxGeometry(CARD_WIDTH + 0.008, CARD_HEIGHT + 0.008, CARD_DEPTH * 0.5);
             const borderMat = new THREE.MeshStandardMaterial({
                 color: 0x1a1a1a,
-                roughness: 0.4,
-                metalness: 0.5
+                roughness: 0.5,
+                metalness: 0.4
             });
             const border = new THREE.Mesh(borderGeo, borderMat);
-            border.position.y = -0.001;
+            border.position.z = -CARD_DEPTH * 0.3;
             group.add(border);
 
-            // Value indicator circle
-            const valueGeo = new THREE.CircleGeometry(0.06, 16);
+            // Value circle in corner
+            const valueGeo = new THREE.CircleGeometry(0.025, 16);
             const valueMat = new THREE.MeshStandardMaterial({
                 color: 0x228B22,
                 roughness: 0.2,
-                metalness: 0.6,
+                metalness: 0.5,
                 emissive: 0x228B22,
-                emissiveIntensity: 0.2
+                emissiveIntensity: 0.3
             });
             const valueCircle = new THREE.Mesh(valueGeo, valueMat);
-            valueCircle.position.set(-CARD_WIDTH * 0.35, CARD_DEPTH / 2 + 0.002, CARD_HEIGHT * 0.35);
-            valueCircle.rotation.x = -Math.PI / 2;
+            valueCircle.position.set(-CARD_WIDTH * 0.38, -CARD_HEIGHT * 0.38, CARD_DEPTH / 2 + 0.002);
             group.add(valueCircle);
 
-            // Add shimmer effect for special cards
-            if (cardData.type === 'action' || isRainbow) {
-                const shimmerGeo = new THREE.PlaneGeometry(CARD_WIDTH - 0.04, CARD_HEIGHT - 0.04);
+            // Center icon/design based on card type
+            let iconColor = mainColor;
+            const iconGeo = new THREE.CircleGeometry(0.04, 6); // Hexagon-ish
+            const iconMat = new THREE.MeshStandardMaterial({
+                color: iconColor,
+                roughness: 0.3,
+                metalness: 0.4,
+                emissive: iconColor,
+                emissiveIntensity: 0.2
+            });
+            const icon = new THREE.Mesh(iconGeo, iconMat);
+            icon.position.set(0, -CARD_HEIGHT * 0.1, CARD_DEPTH / 2 + 0.002);
+            group.add(icon);
+
+            // Rainbow shimmer for special cards
+            if (isRainbow) {
+                const shimmerGeo = new THREE.PlaneGeometry(CARD_WIDTH * 0.9, CARD_HEIGHT * 0.9);
                 const shimmerMat = new THREE.MeshStandardMaterial({
                     color: 0xffffff,
                     transparent: true,
-                    opacity: 0.1,
+                    opacity: 0.15,
                     roughness: 0.0,
                     metalness: 1.0
                 });
                 const shimmer = new THREE.Mesh(shimmerGeo, shimmerMat);
-                shimmer.position.y = CARD_DEPTH / 2 + 0.003;
-                shimmer.rotation.x = -Math.PI / 2;
+                shimmer.position.z = CARD_DEPTH / 2 + 0.003;
                 group.add(shimmer);
             }
 
@@ -882,22 +904,25 @@
             if (!player || !player.hand) return;
 
             const count = player.hand.length;
-            const spreadWidth = Math.min(count * 0.18, 2.2);
-            const arcHeight = 0.15;
+            const spreadWidth = Math.min(count * 0.12, 1.2); // Cards spread horizontally
+            const arcHeight = 0.08;
 
             player.hand.forEach((cardData, i) => {
                 const card = createCard3D(cardData, i);
 
-                // Position in arc at bottom of view
+                // Position cards in a fan at bottom of screen, IN FRONT of camera
+                // Camera is at z=2.8, so cards should be at z < 2.8
                 const t = count > 1 ? i / (count - 1) : 0.5;
                 const x = (t - 0.5) * spreadWidth;
-                const z = 2.0 + Math.abs(t - 0.5) * 0.3;
-                const y = 1.0 - (t - 0.5) * (t - 0.5) * arcHeight;
+                const y = 1.1 + (1 - Math.abs(t - 0.5) * 2) * arcHeight; // Arc shape
+                const z = 2.2; // In front of camera (camera at z=2.8)
 
                 card.position.set(x, y, z);
-                card.rotation.x = -0.7;
-                card.rotation.y = -(t - 0.5) * 0.3;
-                card.rotation.z = (t - 0.5) * 0.15;
+
+                // Tilt cards to face the player (slight backward lean)
+                card.rotation.x = -0.4; // Lean back toward player
+                card.rotation.y = (t - 0.5) * -0.25; // Fan out
+                card.rotation.z = (t - 0.5) * 0.1; // Slight tilt
 
                 card.userData.originalPosition.copy(card.position);
                 card.userData.originalRotation.copy(card.rotation);
@@ -1042,13 +1067,13 @@
                 const originalPos = card.userData.originalPosition.clone();
                 const originalRot = card.userData.originalRotation.clone();
 
-                // Start position (from deck)
-                card.position.set(-0.9, 2, 0);
-                card.rotation.set(0, 0, 0);
+                // Start position (from deck on table)
+                card.position.set(-0.5, 0.9, -0.2);
+                card.rotation.set(-Math.PI / 2, 0, 0); // Lying flat
 
                 setTimeout(() => {
-                    animateTo(card, originalPos, originalRot, 400);
-                }, i * 80);
+                    animateTo(card, originalPos, originalRot, 350);
+                }, i * 100);
             });
         }
 
@@ -1127,17 +1152,17 @@
 
         function animateCardToTable(card) {
             const targetPos = new THREE.Vector3(
-                (Math.random() - 0.5) * 0.5,
+                (Math.random() - 0.5) * 0.4,
                 0.85,
-                (Math.random() - 0.5) * 0.3
+                (Math.random() - 0.5) * 0.3 - 0.1
             );
-            const targetRot = new THREE.Euler(-Math.PI / 2, 0, Math.random() * 0.3);
+            const targetRot = new THREE.Euler(-Math.PI / 2, Math.random() * 0.2, 0);
 
-            animateTo(card, targetPos, targetRot, 350);
+            animateTo(card, targetPos, targetRot, 300);
 
             setTimeout(() => {
                 scene.remove(card);
-            }, 400);
+            }, 350);
         }
 
         function animateTo(obj, targetPos, targetRot, duration) {
@@ -1353,11 +1378,11 @@
 
             const target = card.userData.originalPosition.clone();
             if (isHover) {
-                target.y += 0.12;
-                target.z -= 0.08;
+                target.y += 0.08; // Lift up
+                target.z += 0.1;  // Toward player
             }
 
-            animateTo(card, target, card.userData.originalRotation, 150);
+            animateTo(card, target, card.userData.originalRotation, 120);
         }
 
         function animateSelect(card, isSelect) {
@@ -1365,25 +1390,25 @@
             const targetRot = card.userData.originalRotation.clone();
 
             if (isSelect) {
-                target.y += 0.25;
-                target.z -= 0.15;
-                targetRot.x += 0.15;
+                target.y += 0.15;  // Lift higher
+                target.z += 0.2;   // Closer to player
+                targetRot.x = -0.2; // Stand more upright
 
                 // Glow effect
                 card.children.forEach(child => {
                     if (child.material && child.material.emissive) {
-                        child.material.emissiveIntensity = 0.4;
+                        child.material.emissiveIntensity = 0.5;
                     }
                 });
             } else {
                 card.children.forEach(child => {
                     if (child.material && child.material.emissive) {
-                        child.material.emissiveIntensity = 0.1;
+                        child.material.emissiveIntensity = 0.15;
                     }
                 });
             }
 
-            animateTo(card, target, targetRot, 200);
+            animateTo(card, target, targetRot, 180);
         }
 
         function showTooltip(cardData) {
