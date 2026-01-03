@@ -2,236 +2,297 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monopoly Deal - Liar's Bar Style</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Monopoly Deal</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { overflow: hidden; background: #000; font-family: 'Segoe UI', Arial, sans-serif; user-select: none; }
-        #game-canvas { width: 100vw; height: 100vh; display: block; }
-
-        #hud {
-            position: fixed; top: 15px; left: 50%; transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px);
-            padding: 10px 25px; border-radius: 12px; color: white;
-            display: flex; gap: 30px; border: 1px solid rgba(255, 215, 0, 0.4);
-            z-index: 100;
-        }
-        .hud-stat { display: flex; flex-direction: column; align-items: center; }
-        .hud-value { font-size: 20px; font-weight: bold; color: #ffd700; }
-        .hud-label { font-size: 8px; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
-
-        #draw-prompt {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9); border: 3px solid #ffd700;
-            padding: 40px 60px; border-radius: 20px; text-align: center;
-            z-index: 200; display: none;
-        }
-        #draw-prompt.visible { display: block; }
-        #draw-prompt h2 { color: #ffd700; font-size: 28px; margin-bottom: 20px; }
-        #draw-prompt button {
-            background: linear-gradient(180deg, #ffd700, #ff8c00);
-            border: none; color: #000; padding: 15px 40px; font-size: 16px;
-            font-weight: bold; border-radius: 10px; cursor: pointer;
-        }
-        #draw-prompt button:hover { transform: scale(1.05); }
-
-        #end-turn-btn {
-            position: fixed; bottom: 20px; right: 20px;
-            background: linear-gradient(180deg, #333, #111);
-            border: 2px solid #ffd700; color: #ffd700;
-            padding: 12px 25px; border-radius: 10px; cursor: pointer;
-            font-size: 14px; font-weight: bold; z-index: 100;
-            display: none;
-        }
-        #end-turn-btn.visible { display: block; }
-        #end-turn-btn:hover { background: linear-gradient(180deg, #444, #222); }
-        #end-turn-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-        #drop-zones {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            display: none; z-index: 150; pointer-events: none;
-        }
-        #drop-zones.visible { display: flex; gap: 40px; }
-        .drop-zone {
-            width: 180px; height: 120px; border: 4px dashed rgba(255,255,255,0.5);
-            border-radius: 15px; display: flex; align-items: center; justify-content: center;
-            flex-direction: column; color: white; font-weight: bold;
-            background: rgba(0,0,0,0.6); pointer-events: auto; transition: all 0.2s;
-        }
-        .drop-zone:hover, .drop-zone.active {
-            border-color: #ffd700; background: rgba(255,215,0,0.2);
-            transform: scale(1.1);
-        }
-        .drop-zone span { font-size: 14px; opacity: 0.8; margin-top: 5px; }
-
-        #instructions {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            color: rgba(255,255,255,0.6); font-size: 13px; z-index: 100;
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            user-select: none;
         }
 
-        #action-modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: none; align-items: center;
-            justify-content: center; z-index: 300;
+        /* Setup Screen */
+        #setup {
+            position: fixed; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+            z-index: 1000;
         }
-        #action-modal.visible { display: flex; }
-        .modal-box {
-            background: rgba(20,20,30,0.98); border: 2px solid #ffd700;
-            border-radius: 20px; padding: 30px; max-width: 400px; text-align: center;
-        }
-        .modal-box h2 { color: #ffd700; margin-bottom: 15px; }
-        .modal-box p { color: #ccc; margin-bottom: 20px; font-size: 14px; }
-        .modal-options { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-        .modal-option {
-            background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3);
-            color: white; padding: 12px 20px; border-radius: 10px; cursor: pointer;
-        }
-        .modal-option:hover { border-color: #ffd700; background: rgba(255,215,0,0.2); }
-
-        #setup-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0a2040 100%);
-            display: flex; align-items: center; justify-content: center; z-index: 1000;
-        }
-        #setup-screen.hidden { display: none; }
+        #setup.hidden { display: none; }
         .setup-box {
-            background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(30px);
-            padding: 45px; border-radius: 25px; border: 2px solid rgba(255, 215, 0, 0.5);
-            text-align: center; max-width: 420px;
+            background: rgba(255,255,255,0.1);
+            padding: 40px 50px; border-radius: 20px;
+            text-align: center; backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,215,0,0.3);
         }
-        .setup-box h1 { color: #ffd700; font-size: 38px; margin-bottom: 5px; }
-        .setup-box h2 { color: white; font-size: 14px; font-weight: normal; margin-bottom: 35px; opacity: 0.7; letter-spacing: 3px; }
-        .setup-box label { color: white; font-size: 13px; display: block; margin-bottom: 10px; text-align: left; }
+        .setup-box h1 { color: #ffd700; font-size: 32px; margin-bottom: 5px; }
+        .setup-box p { color: #aaa; margin-bottom: 30px; }
         .setup-box select {
-            width: 100%; padding: 14px; font-size: 14px; border-radius: 10px;
-            border: 2px solid rgba(255, 215, 0, 0.4); background: rgba(0, 0, 0, 0.6);
-            color: white; margin-bottom: 25px; cursor: pointer;
+            width: 100%; padding: 12px; font-size: 16px;
+            border-radius: 8px; border: none; margin-bottom: 20px;
+            background: rgba(255,255,255,0.9); cursor: pointer;
         }
-        #start-btn {
-            background: linear-gradient(180deg, #ffd700 0%, #ff8c00 100%);
-            border: none; color: #000; padding: 16px 45px; font-size: 15px;
-            font-weight: bold; border-radius: 12px; cursor: pointer;
-            text-transform: uppercase; letter-spacing: 2px;
+        .setup-box button {
+            background: linear-gradient(180deg, #ffd700, #ff8c00);
+            border: none; color: #000; padding: 14px 40px;
+            font-size: 16px; font-weight: bold; border-radius: 10px;
+            cursor: pointer; transition: transform 0.2s;
         }
-        #start-btn:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(255, 215, 0, 0.6); }
+        .setup-box button:hover { transform: scale(1.05); }
 
-        #winner-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.95); display: none;
-            align-items: center; justify-content: center; z-index: 2000;
+        /* Game Layout */
+        #game { display: none; height: 100vh; flex-direction: column; }
+        #game.active { display: flex; }
+
+        /* Top Bar - Opponents */
+        #opponents {
+            display: flex; justify-content: center; gap: 15px;
+            padding: 15px; background: rgba(0,0,0,0.3);
         }
-        #winner-screen.visible { display: flex; }
+        .opponent {
+            background: rgba(255,255,255,0.1);
+            padding: 10px 20px; border-radius: 12px;
+            color: white; text-align: center; min-width: 120px;
+            border: 2px solid transparent; transition: all 0.3s;
+        }
+        .opponent.active { border-color: #ffd700; background: rgba(255,215,0,0.2); }
+        .opponent-name { font-weight: bold; font-size: 14px; }
+        .opponent-cards { font-size: 12px; opacity: 0.7; margin-top: 3px; }
+        .opponent-sets { font-size: 11px; color: #4CAF50; margin-top: 3px; }
+
+        /* Middle - Table Area */
+        #table {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 20px; gap: 20px; overflow-y: auto;
+        }
+
+        /* Status Display */
+        #status {
+            background: rgba(0,0,0,0.5); padding: 15px 30px;
+            border-radius: 15px; color: white; text-align: center;
+        }
+        #status h2 { color: #ffd700; font-size: 18px; margin-bottom: 5px; }
+        #status p { font-size: 14px; opacity: 0.8; }
+
+        /* Your Table (Properties + Bank) */
+        #your-table {
+            display: flex; gap: 30px; flex-wrap: wrap; justify-content: center;
+        }
+        .table-section {
+            background: rgba(255,255,255,0.05);
+            padding: 15px; border-radius: 12px; min-width: 200px;
+        }
+        .table-section h3 {
+            color: #ffd700; font-size: 13px; margin-bottom: 10px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .property-row {
+            display: flex; gap: 5px; margin-bottom: 8px; flex-wrap: wrap;
+        }
+        .mini-card {
+            width: 45px; height: 65px; border-radius: 5px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9px; color: white; font-weight: bold;
+            text-align: center; padding: 3px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+        .bank-total { color: #4CAF50; font-size: 18px; font-weight: bold; }
+
+        /* Bottom - Your Hand */
+        #hand-area {
+            background: rgba(0,0,0,0.4);
+            padding: 20px; padding-bottom: 30px;
+        }
+        #hand {
+            display: flex; justify-content: center;
+            gap: 8px; flex-wrap: nowrap; overflow-x: auto;
+            padding: 10px 0;
+        }
+
+        /* Cards */
+        .card {
+            width: 90px; height: 130px; border-radius: 10px;
+            background: white; cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            flex-shrink: 0; position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column;
+            overflow: hidden;
+        }
+        .card:hover { transform: translateY(-15px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+        .card.selected {
+            transform: translateY(-25px);
+            box-shadow: 0 15px 40px rgba(255,215,0,0.5);
+            outline: 3px solid #ffd700;
+        }
+        .card-header {
+            padding: 8px 5px; color: white; font-size: 10px;
+            font-weight: bold; text-align: center;
+            text-transform: uppercase;
+        }
+        .card-body {
+            flex: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 5px; text-align: center;
+        }
+        .card-name { font-size: 11px; font-weight: bold; color: #333; }
+        .card-desc { font-size: 9px; color: #666; margin-top: 3px; }
+        .card-value {
+            position: absolute; bottom: 5px; left: 5px;
+            background: #228B22; color: white;
+            width: 24px; height: 24px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: bold;
+        }
+
+        /* Action Buttons */
+        #actions {
+            display: flex; justify-content: center; gap: 10px;
+            margin-top: 15px;
+        }
+        .action-btn {
+            padding: 12px 25px; border-radius: 10px;
+            font-size: 14px; font-weight: bold;
+            cursor: pointer; border: none;
+            transition: transform 0.2s, opacity 0.2s;
+        }
+        .action-btn:hover:not(:disabled) { transform: scale(1.05); }
+        .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-draw { background: linear-gradient(180deg, #4CAF50, #2E7D32); color: white; }
+        .btn-play { background: linear-gradient(180deg, #2196F3, #1565C0); color: white; }
+        .btn-bank { background: linear-gradient(180deg, #FF9800, #E65100); color: white; }
+        .btn-end { background: linear-gradient(180deg, #9C27B0, #6A1B9A); color: white; }
+
+        /* Winner Screen */
+        #winner {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.9);
+            display: none; align-items: center; justify-content: center;
+            z-index: 1000;
+        }
+        #winner.show { display: flex; }
         .winner-box { text-align: center; }
-        .winner-box h1 { font-size: 56px; color: #ffd700; margin-bottom: 15px; }
-        .winner-box p { font-size: 24px; color: white; margin-bottom: 35px; }
+        .winner-box h1 { color: #ffd700; font-size: 48px; margin-bottom: 10px; }
+        .winner-box p { color: white; font-size: 24px; margin-bottom: 30px; }
         .winner-box button {
             background: linear-gradient(180deg, #ffd700, #ff8c00);
-            border: none; color: #000; padding: 15px 40px; font-size: 16px;
-            font-weight: bold; border-radius: 10px; cursor: pointer;
+            border: none; color: #000; padding: 15px 40px;
+            font-size: 16px; font-weight: bold; border-radius: 10px;
+            cursor: pointer;
         }
 
-        #card-info {
-            position: fixed; top: 80px; right: 20px;
-            background: rgba(0,0,0,0.9); border: 1px solid #ffd700;
-            padding: 15px 20px; border-radius: 12px; color: white;
-            min-width: 200px; display: none; z-index: 100;
+        /* Modal for player selection */
+        #modal {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.8);
+            display: none; align-items: center; justify-content: center;
+            z-index: 500;
         }
-        #card-info.visible { display: block; }
-        #card-info h3 { color: #ffd700; margin-bottom: 5px; }
-        #card-info p { font-size: 12px; opacity: 0.8; }
-        #card-info .value { color: #4CAF50; font-weight: bold; margin-top: 8px; }
+        #modal.show { display: flex; }
+        .modal-box {
+            background: #1a1a2e; border: 2px solid #ffd700;
+            border-radius: 15px; padding: 25px; text-align: center;
+            min-width: 280px;
+        }
+        .modal-box h3 { color: #ffd700; margin-bottom: 15px; }
+        .modal-options { display: flex; flex-direction: column; gap: 10px; }
+        .modal-opt {
+            padding: 12px; background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px; color: white; cursor: pointer;
+            transition: all 0.2s;
+        }
+        .modal-opt:hover { background: rgba(255,215,0,0.2); border-color: #ffd700; }
 
-        #view-table-btn {
-            position: fixed; top: 15px; right: 20px;
-            background: rgba(0,100,0,0.8); border: 2px solid #4CAF50;
-            color: white; padding: 10px 20px; border-radius: 10px;
-            cursor: pointer; font-size: 12px; font-weight: bold; z-index: 100;
+        /* Responsive */
+        @media (max-width: 600px) {
+            .card { width: 70px; height: 100px; }
+            .card-header { font-size: 8px; padding: 5px 3px; }
+            .card-name { font-size: 9px; }
+            .card-value { width: 20px; height: 20px; font-size: 8px; }
+            .action-btn { padding: 10px 18px; font-size: 12px; }
         }
-        #view-table-btn:hover { background: rgba(0,120,0,0.9); }
     </style>
 </head>
 <body>
-    <div id="setup-screen">
+    <div id="setup">
         <div class="setup-box">
-            <h1>MONOPOLY DEAL</h1>
-            <h2>LIAR'S BAR STYLE</h2>
-            <label>Number of Players</label>
+            <h1>Monopoly Deal</h1>
+            <p>The Card Game</p>
             <select id="player-count">
                 <option value="2">2 Players</option>
                 <option value="3">3 Players</option>
                 <option value="4">4 Players</option>
             </select>
-            <button id="start-btn">Enter Game</button>
+            <button onclick="startGame()">Play</button>
         </div>
     </div>
 
-    <canvas id="game-canvas"></canvas>
-
-    <div id="hud">
-        <div class="hud-stat"><span class="hud-value" id="hud-turn">P1</span><span class="hud-label">Turn</span></div>
-        <div class="hud-stat"><span class="hud-value" id="hud-actions">3</span><span class="hud-label">Actions</span></div>
-        <div class="hud-stat"><span class="hud-value" id="hud-sets">0/3</span><span class="hud-label">Sets</span></div>
-        <div class="hud-stat"><span class="hud-value" id="hud-bank">$0</span><span class="hud-label">Bank</span></div>
-    </div>
-
-    <button id="view-table-btn">View Table</button>
-
-    <div id="draw-prompt">
-        <h2>Your Turn!</h2>
-        <button id="draw-btn">Draw Cards</button>
-    </div>
-
-    <div id="drop-zones">
-        <div class="drop-zone" id="zone-play">
-            PLAY<span>Property/Action</span>
+    <div id="game">
+        <div id="opponents"></div>
+        <div id="table">
+            <div id="status">
+                <h2 id="turn-text">Your Turn</h2>
+                <p id="action-text">Draw 2 cards to start</p>
+            </div>
+            <div id="your-table">
+                <div class="table-section" id="properties-section">
+                    <h3>Your Properties</h3>
+                    <div id="properties"></div>
+                </div>
+                <div class="table-section" id="bank-section">
+                    <h3>Your Bank</h3>
+                    <div id="bank"></div>
+                    <div class="bank-total" id="bank-total">$0M</div>
+                </div>
+            </div>
         </div>
-        <div class="drop-zone" id="zone-bank">
-            BANK<span>Add to money</span>
-        </div>
-    </div>
-
-    <button id="end-turn-btn">End Turn</button>
-
-    <div id="card-info">
-        <h3 id="info-name">Card</h3>
-        <p id="info-desc">Description</p>
-        <div class="value" id="info-value">$0M</div>
-    </div>
-
-    <div id="instructions">Drag cards to play or bank them</div>
-
-    <div id="action-modal">
-        <div class="modal-box">
-            <h2 id="modal-title">Choose Target</h2>
-            <p id="modal-desc">Select a player</p>
-            <div class="modal-options" id="modal-options"></div>
+        <div id="hand-area">
+            <div id="hand"></div>
+            <div id="actions">
+                <button class="action-btn btn-draw" id="btn-draw" onclick="drawCards()">Draw Cards</button>
+                <button class="action-btn btn-play" id="btn-play" onclick="playSelected()" disabled>Play</button>
+                <button class="action-btn btn-bank" id="btn-bank" onclick="bankSelected()" disabled>Bank</button>
+                <button class="action-btn btn-end" id="btn-end" onclick="endTurn()" disabled>End Turn</button>
+            </div>
         </div>
     </div>
 
-    <div id="winner-screen">
+    <div id="winner">
         <div class="winner-box">
-            <h1>WINNER!</h1>
+            <h1>Winner!</h1>
             <p id="winner-name">Player 1</p>
             <button onclick="location.reload()">Play Again</button>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <div id="modal">
+        <div class="modal-box">
+            <h3 id="modal-title">Choose</h3>
+            <div class="modal-options" id="modal-options"></div>
+        </div>
+    </div>
+
     <script>
-        // ==================== DATA ====================
+        // Color definitions
         const COLORS = {
-            brown: { hex: 0x8B4513, name: 'Brown', size: 2 },
-            lightBlue: { hex: 0x87CEEB, name: 'Light Blue', size: 3 },
-            pink: { hex: 0xFF1493, name: 'Pink', size: 3 },
-            orange: { hex: 0xFF8C00, name: 'Orange', size: 3 },
-            red: { hex: 0xDC143C, name: 'Red', size: 3 },
-            yellow: { hex: 0xFFD700, name: 'Yellow', size: 3 },
-            green: { hex: 0x228B22, name: 'Green', size: 3 },
-            blue: { hex: 0x0000CD, name: 'Dark Blue', size: 2 },
-            railroad: { hex: 0x333333, name: 'Railroad', size: 4 },
-            utility: { hex: 0x90EE90, name: 'Utility', size: 2 }
+            brown: { hex: '#8B4513', name: 'Brown', size: 2 },
+            lightBlue: { hex: '#87CEEB', name: 'Light Blue', size: 3 },
+            pink: { hex: '#FF69B4', name: 'Pink', size: 3 },
+            orange: { hex: '#FF8C00', name: 'Orange', size: 3 },
+            red: { hex: '#DC143C', name: 'Red', size: 3 },
+            yellow: { hex: '#FFD700', name: 'Yellow', size: 3 },
+            green: { hex: '#228B22', name: 'Green', size: 3 },
+            blue: { hex: '#0000CD', name: 'Dark Blue', size: 2 },
+            railroad: { hex: '#333', name: 'Railroad', size: 4 },
+            utility: { hex: '#90EE90', name: 'Utility', size: 2 }
         };
 
+        // Card definitions
         const CARDS = {
             properties: [
                 { name: 'Mediterranean', color: 'brown', value: 1 },
@@ -242,7 +303,7 @@
                 { name: 'St. Charles', color: 'pink', value: 2 },
                 { name: 'States Ave', color: 'pink', value: 2 },
                 { name: 'Virginia Ave', color: 'pink', value: 2 },
-                { name: 'St. James Pl', color: 'orange', value: 2 },
+                { name: 'St. James', color: 'orange', value: 2 },
                 { name: 'Tennessee', color: 'orange', value: 2 },
                 { name: 'New York Ave', color: 'orange', value: 2 },
                 { name: 'Kentucky Ave', color: 'red', value: 3 },
@@ -268,12 +329,12 @@
                 { value: 4, count: 3 }, { value: 5, count: 2 }, { value: 10, count: 1 }
             ],
             actions: [
-                { name: 'Deal Breaker', desc: 'Steal a complete set', value: 5, count: 2, action: 'dealBreaker' },
+                { name: 'Deal Breaker', desc: 'Steal complete set', value: 5, count: 2, action: 'dealBreaker' },
                 { name: 'Just Say No', desc: 'Block any action', value: 4, count: 3, action: 'justSayNo' },
                 { name: 'Sly Deal', desc: 'Steal 1 property', value: 3, count: 3, action: 'slyDeal' },
                 { name: 'Forced Deal', desc: 'Swap properties', value: 3, count: 3, action: 'forcedDeal' },
-                { name: 'Debt Collect', desc: 'Collect $5M', value: 3, count: 3, action: 'debtCollector' },
-                { name: 'Birthday!', desc: 'All pay $2M', value: 2, count: 3, action: 'birthday' },
+                { name: 'Debt Collector', desc: 'Collect $5M', value: 3, count: 3, action: 'debtCollector' },
+                { name: 'Birthday', desc: 'All pay $2M', value: 2, count: 3, action: 'birthday' },
                 { name: 'Pass Go', desc: 'Draw 2 cards', value: 1, count: 10, action: 'passGo' },
                 { name: 'House', desc: '+$3M rent', value: 3, count: 3, action: 'house' },
                 { name: 'Hotel', desc: '+$4M rent', value: 4, count: 2, action: 'hotel' },
@@ -298,538 +359,186 @@
             ]
         };
 
-        // ==================== GAME STATE ====================
-        let scene, camera, renderer, raycaster, mouse;
-        let lookYaw = 0, lookPitch = 0;
-        let handCards = [], tableMeshes = [];
-        let draggedCard = null, dragStartPos = null;
-        let game = { players: [], currentPlayer: 0, deck: [], phase: 'draw', actions: 3, turnDrawn: false };
+        // Game state
+        let game = {
+            players: [],
+            current: 0,
+            deck: [],
+            actions: 3,
+            drawn: false,
+            selectedCard: null
+        };
 
-        // Liar's Bar style - HUGE cards
-        const CARD_W = 0.6, CARD_H = 0.9, CARD_D = 0.008;
-
-        init();
-
-        function init() {
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(0x0a0a15);
-
-            // Fixed seated camera - like sitting at a poker table
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-            camera.position.set(0, 1.4, 2.5);
-            camera.lookAt(0, 0.8, 0);
-
-            const canvas = document.getElementById('game-canvas');
-            renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-            renderer.shadowMap.enabled = true;
-            renderer.toneMapping = THREE.ACESFilmicToneMapping;
-
-            raycaster = new THREE.Raycaster();
-            mouse = new THREE.Vector2();
-
-            createEnvironment();
-            createLighting();
-
-            // Look around (limited - seated position)
-            let isLooking = false, lastX = 0, lastY = 0;
-            canvas.addEventListener('mousedown', e => {
-                if (e.button === 2) { isLooking = true; lastX = e.clientX; lastY = e.clientY; }
-                else handleMouseDown(e);
-            });
-            canvas.addEventListener('mouseup', e => {
-                if (e.button === 2) isLooking = false;
-                else handleMouseUp(e);
-            });
-            canvas.addEventListener('mousemove', e => {
-                if (isLooking) {
-                    lookYaw -= (e.clientX - lastX) * 0.003;
-                    lookPitch -= (e.clientY - lastY) * 0.003;
-                    lookPitch = Math.max(-0.3, Math.min(0.5, lookPitch));
-                    lookYaw = Math.max(-0.8, Math.min(0.8, lookYaw));
-                    updateCamera();
-                    lastX = e.clientX; lastY = e.clientY;
-                } else {
-                    handleMouseMove(e);
-                }
-            });
-            canvas.addEventListener('contextmenu', e => e.preventDefault());
-
-            // Touch controls
-            let touchStart = null;
-            canvas.addEventListener('touchstart', e => {
-                if (e.touches.length === 1) {
-                    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-                    handleMouseDown({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY });
-                }
-            }, { passive: true });
-            canvas.addEventListener('touchmove', e => {
-                if (e.touches.length === 1) {
-                    handleMouseMove({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY });
-                }
-            }, { passive: true });
-            canvas.addEventListener('touchend', e => {
-                handleMouseUp({ clientX: touchStart?.x || 0, clientY: touchStart?.y || 0 });
-            });
-
-            window.addEventListener('resize', onResize);
-            document.getElementById('start-btn').addEventListener('click', startGame);
-            document.getElementById('draw-btn').addEventListener('click', drawCards);
-            document.getElementById('end-turn-btn').addEventListener('click', endTurn);
-            document.getElementById('view-table-btn').addEventListener('click', viewTable);
-
-            animate();
-        }
-
-        function updateCamera() {
-            camera.position.set(0, 1.4, 2.5);
-            camera.rotation.set(lookPitch, lookYaw, 0);
-        }
-
-        function createEnvironment() {
-            // Dark room floor
-            const floor = new THREE.Mesh(
-                new THREE.PlaneGeometry(20, 20),
-                new THREE.MeshStandardMaterial({ color: 0x0a0505, roughness: 0.9 })
-            );
-            floor.rotation.x = -Math.PI / 2;
-            floor.receiveShadow = true;
-            scene.add(floor);
-
-            // Poker table
-            const table = new THREE.Mesh(
-                new THREE.CylinderGeometry(2.5, 2.5, 0.12, 64),
-                new THREE.MeshStandardMaterial({ color: 0x0d5c0d, roughness: 0.7 })
-            );
-            table.position.y = 0.7;
-            table.receiveShadow = true;
-            scene.add(table);
-
-            // Table rim
-            const rim = new THREE.Mesh(
-                new THREE.TorusGeometry(2.55, 0.1, 16, 64),
-                new THREE.MeshStandardMaterial({ color: 0x3a1a08, metalness: 0.3, roughness: 0.5 })
-            );
-            rim.rotation.x = Math.PI / 2;
-            rim.position.y = 0.76;
-            scene.add(rim);
-
-            // Center deck
-            const deckGroup = new THREE.Group();
-            for (let i = 0; i < 20; i++) {
-                const card = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.4, 0.004, 0.6),
-                    new THREE.MeshStandardMaterial({ color: 0xcc0000 })
-                );
-                card.position.y = i * 0.004;
-                deckGroup.add(card);
-            }
-            deckGroup.position.set(0, 0.77, 0);
-            scene.add(deckGroup);
-        }
-
-        function createLighting() {
-            scene.add(new THREE.AmbientLight(0xffffff, 0.3));
-
-            const spotLight = new THREE.SpotLight(0xfff5e0, 2.5);
-            spotLight.position.set(0, 5, 0);
-            spotLight.angle = Math.PI / 3;
-            spotLight.penumbra = 0.5;
-            spotLight.castShadow = true;
-            scene.add(spotLight);
-
-            // Overhead lamp
-            const lamp = new THREE.Mesh(
-                new THREE.ConeGeometry(0.8, 0.5, 32, 1, true),
-                new THREE.MeshStandardMaterial({ color: 0x1a5a1a, side: THREE.DoubleSide })
-            );
-            lamp.position.set(0, 4.5, 0);
-            lamp.rotation.x = Math.PI;
-            scene.add(lamp);
-        }
-
-        // ==================== CARD CREATION ====================
-        function createCardTexture(data, large = false) {
-            const canvas = document.createElement('canvas');
-            canvas.width = large ? 400 : 280;
-            canvas.height = large ? 580 : 400;
-            const ctx = canvas.getContext('2d');
-            const w = canvas.width, h = canvas.height;
-
-            // White background
-            ctx.fillStyle = '#f8f8f8';
-            ctx.fillRect(0, 0, w, h);
-
-            let color = '#666', header = '', main = data.name || '';
-
-            if (data.type === 'property') {
-                color = '#' + COLORS[data.color].hex.toString(16).padStart(6, '0');
-                header = COLORS[data.color].name;
-            } else if (data.type === 'money') {
-                color = '#228B22'; header = 'MONEY'; main = `$${data.value}M`;
-            } else if (data.type === 'action') {
-                color = '#DAA520'; header = 'ACTION';
-            } else if (data.type === 'rent') {
-                color = '#DC143C'; header = 'RENT';
-            } else if (data.type === 'wild') {
-                color = '#8A2BE2'; header = 'WILD';
-            }
-
-            // Colored header
-            ctx.fillStyle = color;
-            ctx.fillRect(0, 0, w, h * 0.25);
-            ctx.fillStyle = '#fff';
-            ctx.font = `bold ${large ? 36 : 26}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.fillText(header, w/2, h * 0.12);
-
-            // Border
-            ctx.strokeStyle = '#111';
-            ctx.lineWidth = large ? 8 : 5;
-            ctx.strokeRect(4, 4, w - 8, h - 8);
-
-            // Main text
-            ctx.fillStyle = '#222';
-            ctx.font = `bold ${large ? 32 : 24}px Arial`;
-            ctx.fillText(main, w/2, h * 0.42);
-
-            // Description for action cards
-            if (data.desc) {
-                ctx.font = `${large ? 22 : 16}px Arial`;
-                ctx.fillStyle = '#555';
-                ctx.fillText(data.desc, w/2, h * 0.52);
-            }
-
-            // Value circle
-            ctx.beginPath();
-            ctx.arc(w * 0.18, h * 0.85, large ? 45 : 32, 0, Math.PI * 2);
-            ctx.fillStyle = '#228B22';
-            ctx.fill();
-            ctx.fillStyle = '#fff';
-            ctx.font = `bold ${large ? 28 : 20}px Arial`;
-            ctx.fillText(`$${data.value}M`, w * 0.18, h * 0.87);
-
-            const tex = new THREE.CanvasTexture(canvas);
-            tex.anisotropy = 8;
-            return tex;
-        }
-
-        function createCard3D(data, large = false) {
-            const w = large ? CARD_W : 0.35;
-            const h = large ? CARD_H : 0.5;
-            const group = new THREE.Group();
-            const tex = createCardTexture(data, large);
-
-            const front = new THREE.Mesh(
-                new THREE.PlaneGeometry(w, h),
-                new THREE.MeshStandardMaterial({ map: tex, roughness: 0.2 })
-            );
-            front.position.z = CARD_D / 2;
-            group.add(front);
-
-            const back = new THREE.Mesh(
-                new THREE.PlaneGeometry(w, h),
-                new THREE.MeshStandardMaterial({ color: 0xcc0000, roughness: 0.3 })
-            );
-            back.position.z = -CARD_D / 2;
-            back.rotation.y = Math.PI;
-            group.add(back);
-
-            const edge = new THREE.Mesh(
-                new THREE.BoxGeometry(w + 0.01, h + 0.01, CARD_D),
-                new THREE.MeshStandardMaterial({ color: 0x111 })
-            );
-            group.add(edge);
-
-            group.castShadow = true;
-            group.userData = { cardData: data, isCard: true, origPos: new THREE.Vector3(), origRot: new THREE.Euler() };
-            return group;
-        }
-
-        function createCardBack(small = false) {
-            const w = small ? 0.25 : 0.35;
-            const h = small ? 0.38 : 0.5;
-            const mesh = new THREE.Mesh(
-                new THREE.BoxGeometry(w, h, CARD_D),
-                new THREE.MeshStandardMaterial({ color: 0xcc0000, roughness: 0.3 })
-            );
-            mesh.castShadow = true;
-            return mesh;
-        }
-
-        // ==================== RENDERING ====================
-        function renderTable() {
-            tableMeshes.forEach(m => scene.remove(m));
-            tableMeshes = [];
-
-            const numPlayers = game.players.length;
-
-            game.players.forEach((player, pIdx) => {
-                if (pIdx === game.currentPlayer) return; // Skip current player's table stuff
-
-                // Position opponents around table
-                const angle = ((pIdx - game.currentPlayer + numPlayers) % numPlayers) / numPlayers * Math.PI - Math.PI/2;
-                const dist = 1.8;
-                const px = Math.sin(angle) * dist;
-                const pz = Math.cos(angle) * dist - 0.5;
-
-                // Opponent card backs (their hand)
-                const handCount = Math.min(player.hand.length, 7);
-                for (let i = 0; i < handCount; i++) {
-                    const card = createCardBack(true);
-                    card.position.set(
-                        px + (i - handCount/2) * 0.12,
-                        0.82,
-                        pz - 0.3
-                    );
-                    card.rotation.x = -Math.PI / 2 + 0.3;
-                    tableMeshes.push(card);
-                    scene.add(card);
-                }
-
-                // Player name label
-                const nameCanvas = document.createElement('canvas');
-                nameCanvas.width = 200; nameCanvas.height = 60;
-                const nctx = nameCanvas.getContext('2d');
-                nctx.fillStyle = pIdx === game.currentPlayer ? '#ffd700' : '#fff';
-                nctx.font = 'bold 32px Arial';
-                nctx.textAlign = 'center';
-                nctx.fillText(player.name, 100, 40);
-                const nameTex = new THREE.CanvasTexture(nameCanvas);
-                const nameLabel = new THREE.Mesh(
-                    new THREE.PlaneGeometry(0.5, 0.15),
-                    new THREE.MeshBasicMaterial({ map: nameTex, transparent: true })
-                );
-                nameLabel.position.set(px, 1.1, pz - 0.2);
-                nameLabel.lookAt(camera.position);
-                tableMeshes.push(nameLabel);
-                scene.add(nameLabel);
-
-                // Show their properties on table
-                const propColors = Object.keys(player.properties);
-                propColors.forEach((color, ci) => {
-                    const cards = player.properties[color];
-                    cards.forEach((card, cardIdx) => {
-                        const mesh = createCard3D(card, false);
-                        mesh.position.set(
-                            px + (ci - propColors.length/2) * 0.3,
-                            0.78 + cardIdx * 0.01,
-                            pz + 0.2
-                        );
-                        mesh.rotation.x = -Math.PI / 2;
-                        mesh.scale.set(0.6, 0.6, 0.6);
-                        tableMeshes.push(mesh);
-                        scene.add(mesh);
-                    });
-                });
-            });
-
-            // Current player's properties and bank (visible on their side of table)
-            const p = game.players[game.currentPlayer];
-            if (p) {
-                // Properties in front of player
-                const propColors = Object.keys(p.properties);
-                propColors.forEach((color, ci) => {
-                    const cards = p.properties[color];
-                    cards.forEach((card, cardIdx) => {
-                        const mesh = createCard3D(card, false);
-                        mesh.position.set(
-                            -1 + ci * 0.4,
-                            0.78 + cardIdx * 0.01,
-                            1.5
-                        );
-                        mesh.rotation.x = -Math.PI / 2 - 0.2;
-                        mesh.scale.set(0.7, 0.7, 0.7);
-                        tableMeshes.push(mesh);
-                        scene.add(mesh);
-                    });
-                });
-
-                // Bank on the right
-                p.bank.forEach((card, i) => {
-                    const mesh = createCard3D(card, false);
-                    mesh.position.set(
-                        1.5 + (i % 3) * 0.2,
-                        0.78 + Math.floor(i / 3) * 0.01,
-                        1.5 + Math.floor(i / 3) * 0.15
-                    );
-                    mesh.rotation.x = -Math.PI / 2 - 0.2;
-                    mesh.scale.set(0.5, 0.5, 0.5);
-                    tableMeshes.push(mesh);
-                    scene.add(mesh);
-                });
-            }
-        }
-
-        function createHandCards() {
-            handCards.forEach(c => scene.remove(c));
-            handCards = [];
-
-            const player = game.players[game.currentPlayer];
-            if (!player) return;
-
-            const count = player.hand.length;
-            if (count === 0) return;
-
-            // HUGE cards - Liar's Bar style, held up in front of face
-            const spread = Math.min(count * 0.5, 3);
-
-            player.hand.forEach((data, i) => {
-                const card = createCard3D(data, true); // Large cards
-                const t = count > 1 ? i / (count - 1) : 0.5;
-
-                // Fan out at bottom of screen, like holding cards
-                const x = (t - 0.5) * spread;
-                const y = 0.3 + Math.cos((t - 0.5) * Math.PI) * 0.15; // Arc
-                const z = 1.2 - Math.abs(t - 0.5) * 0.2; // Closer in middle
-
-                card.position.set(x, y, z);
-                card.rotation.x = -0.6; // Tilted toward player
-                card.rotation.y = (t - 0.5) * 0.15; // Slight fan angle
-                card.rotation.z = (t - 0.5) * 0.1; // Tilt for fan effect
-
-                card.userData.origPos.copy(card.position);
-                card.userData.origRot.copy(card.rotation);
-                card.userData.index = i;
-
-                handCards.push(card);
-                scene.add(card);
-            });
-        }
-
-        // ==================== GAME LOGIC ====================
+        // Create deck
         function createDeck() {
             const deck = [];
             let id = 0;
-            CARDS.properties.forEach(p => deck.push({ id: id++, type: 'property', ...p }));
-            CARDS.money.forEach(m => { for (let i = 0; i < m.count; i++) deck.push({ id: id++, type: 'money', name: `$${m.value}M`, value: m.value }); });
-            CARDS.actions.forEach(a => { for (let i = 0; i < a.count; i++) deck.push({ id: id++, type: 'action', ...a }); });
-            CARDS.rent.forEach(r => { for (let i = 0; i < r.count; i++) deck.push({ id: id++, type: 'rent', name: 'Rent', colors: r.colors, value: r.value }); });
-            CARDS.wilds.forEach(w => { for (let i = 0; i < w.count; i++) deck.push({ id: id++, type: 'wild', name: 'Wild', colors: w.colors, value: 0 }); });
 
+            CARDS.properties.forEach(p => {
+                deck.push({ id: id++, type: 'property', ...p });
+            });
+
+            CARDS.money.forEach(m => {
+                for (let i = 0; i < m.count; i++) {
+                    deck.push({ id: id++, type: 'money', name: `$${m.value}M`, value: m.value });
+                }
+            });
+
+            CARDS.actions.forEach(a => {
+                for (let i = 0; i < a.count; i++) {
+                    deck.push({ id: id++, type: 'action', ...a });
+                }
+            });
+
+            CARDS.rent.forEach(r => {
+                for (let i = 0; i < r.count; i++) {
+                    deck.push({ id: id++, type: 'rent', name: 'Rent', colors: r.colors, value: r.value });
+                }
+            });
+
+            CARDS.wilds.forEach(w => {
+                for (let i = 0; i < w.count; i++) {
+                    deck.push({ id: id++, type: 'wild', name: 'Wild Card', colors: w.colors, value: 0 });
+                }
+            });
+
+            // Shuffle
             for (let i = deck.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [deck[i], deck[j]] = [deck[j], deck[i]];
             }
+
             return deck;
         }
 
+        // Start game
         function startGame() {
             const count = parseInt(document.getElementById('player-count').value);
             game.deck = createDeck();
             game.players = [];
-            game.currentPlayer = 0;
+            game.current = 0;
             game.actions = 3;
-            game.turnDrawn = false;
+            game.drawn = false;
+            game.selectedCard = null;
 
             for (let i = 0; i < count; i++) {
                 const p = { name: `Player ${i + 1}`, hand: [], properties: {}, bank: [] };
-                for (let j = 0; j < 5; j++) if (game.deck.length) p.hand.push(game.deck.pop());
+                for (let j = 0; j < 5; j++) {
+                    if (game.deck.length) p.hand.push(game.deck.pop());
+                }
                 game.players.push(p);
             }
 
-            document.getElementById('setup-screen').classList.add('hidden');
-            createHandCards();
-            renderTable();
-            updateUI();
-            showDrawPrompt();
+            document.getElementById('setup').classList.add('hidden');
+            document.getElementById('game').classList.add('active');
+            render();
         }
 
-        function showDrawPrompt() {
-            if (!game.turnDrawn) {
-                document.getElementById('draw-prompt').classList.add('visible');
-            }
-        }
-
+        // Draw cards
         function drawCards() {
-            document.getElementById('draw-prompt').classList.remove('visible');
-            const p = game.players[game.currentPlayer];
-            const n = p.hand.length === 0 ? 5 : 2;
-            for (let i = 0; i < n; i++) if (game.deck.length) p.hand.push(game.deck.pop());
-            game.turnDrawn = true;
-            createHandCards();
-            updateUI();
+            if (game.drawn) return;
+            const p = game.players[game.current];
+            const count = p.hand.length === 0 ? 5 : 2;
+            for (let i = 0; i < count; i++) {
+                if (game.deck.length) p.hand.push(game.deck.pop());
+            }
+            game.drawn = true;
+            game.selectedCard = null;
+            render();
         }
 
-        function playCard(card) {
-            if (game.actions <= 0) return;
-            const p = game.players[game.currentPlayer];
-            const data = card.userData.cardData;
-            const idx = p.hand.findIndex(c => c.id === data.id);
-            if (idx === -1) return;
-
-            if (data.type === 'property' || data.type === 'wild') {
-                const color = data.color || (data.colors[0] === 'wild' ? 'brown' : data.colors[0]);
-                if (!p.properties[color]) p.properties[color] = [];
-                p.properties[color].push(data);
-                p.hand.splice(idx, 1);
-                game.actions--;
-                finishPlay();
-            } else if (data.type === 'action') {
-                executeAction(data, idx);
-            } else if (data.type === 'rent') {
-                const rentColor = data.colors[0] === 'wild' ? Object.keys(p.properties)[0] : data.colors[0];
-                if (rentColor && p.properties[rentColor]) {
-                    const amount = p.properties[rentColor].length;
-                    game.players.forEach((opp, i) => {
-                        if (i !== game.currentPlayer) collectFromPlayer(opp, amount);
-                    });
-                }
-                p.hand.splice(idx, 1);
-                game.actions--;
-                finishPlay();
+        // Select card
+        function selectCard(index) {
+            if (!game.drawn || game.actions <= 0) return;
+            if (game.selectedCard === index) {
+                game.selectedCard = null;
             } else {
-                p.hand.splice(idx, 1);
+                game.selectedCard = index;
+            }
+            render();
+        }
+
+        // Play selected card
+        function playSelected() {
+            if (game.selectedCard === null || game.actions <= 0) return;
+            const p = game.players[game.current];
+            const card = p.hand[game.selectedCard];
+
+            if (card.type === 'property') {
+                if (!p.properties[card.color]) p.properties[card.color] = [];
+                p.properties[card.color].push(card);
+                p.hand.splice(game.selectedCard, 1);
                 game.actions--;
-                finishPlay();
+                game.selectedCard = null;
+                afterPlay();
+            } else if (card.type === 'wild') {
+                const color = card.colors[0] === 'wild' ? 'brown' : card.colors[0];
+                if (!p.properties[color]) p.properties[color] = [];
+                p.properties[color].push(card);
+                p.hand.splice(game.selectedCard, 1);
+                game.actions--;
+                game.selectedCard = null;
+                afterPlay();
+            } else if (card.type === 'action') {
+                executeAction(card, game.selectedCard);
+            } else if (card.type === 'rent') {
+                executeRent(card, game.selectedCard);
+            } else {
+                // Money cards can't be played as action
+                game.selectedCard = null;
+                render();
             }
         }
 
-        function bankCard(card) {
-            if (game.actions <= 0) return;
-            const p = game.players[game.currentPlayer];
-            const data = card.userData.cardData;
-            const idx = p.hand.findIndex(c => c.id === data.id);
-            if (idx === -1) return;
-
-            p.bank.push(data);
-            p.hand.splice(idx, 1);
+        // Bank selected card
+        function bankSelected() {
+            if (game.selectedCard === null || game.actions <= 0) return;
+            const p = game.players[game.current];
+            const card = p.hand[game.selectedCard];
+            p.bank.push(card);
+            p.hand.splice(game.selectedCard, 1);
             game.actions--;
-            finishPlay();
+            game.selectedCard = null;
+            afterPlay();
         }
 
-        function executeAction(data, idx) {
-            const p = game.players[game.currentPlayer];
+        // Execute action card
+        function executeAction(card, idx) {
+            const p = game.players[game.current];
 
-            switch (data.action) {
+            switch (card.action) {
                 case 'passGo':
-                    for (let i = 0; i < 2; i++) if (game.deck.length) p.hand.push(game.deck.pop());
+                    for (let i = 0; i < 2; i++) {
+                        if (game.deck.length) p.hand.push(game.deck.pop());
+                    }
                     p.hand.splice(idx, 1);
                     game.actions--;
-                    finishPlay();
+                    game.selectedCard = null;
+                    afterPlay();
                     break;
 
                 case 'birthday':
                     game.players.forEach((opp, i) => {
-                        if (i !== game.currentPlayer) collectFromPlayer(opp, 2);
+                        if (i !== game.current) collectFrom(opp, 2);
                     });
                     p.hand.splice(idx, 1);
                     game.actions--;
-                    finishPlay();
+                    game.selectedCard = null;
+                    afterPlay();
                     break;
 
                 case 'debtCollector':
-                    showPlayerSelector('Collect $5M from:', opp => {
-                        collectFromPlayer(game.players[opp], 5);
+                    showPlayerPicker('Collect $5M from:', (oppIdx) => {
+                        collectFrom(game.players[oppIdx], 5);
                         p.hand.splice(idx, 1);
                         game.actions--;
-                        finishPlay();
+                        game.selectedCard = null;
+                        afterPlay();
                     });
                     break;
 
                 case 'slyDeal':
-                    showPlayerSelector('Steal property from:', oppIdx => {
+                    showPlayerPicker('Steal property from:', (oppIdx) => {
                         const opp = game.players[oppIdx];
                         const colors = Object.keys(opp.properties).filter(c =>
                             opp.properties[c].length > 0 && opp.properties[c].length < COLORS[c].size
@@ -843,46 +552,71 @@
                         }
                         p.hand.splice(idx, 1);
                         game.actions--;
-                        finishPlay();
+                        game.selectedCard = null;
+                        afterPlay();
                     });
                     break;
 
                 case 'dealBreaker':
-                    showPlayerSelector('Steal complete set from:', oppIdx => {
+                    showPlayerPicker('Steal complete set from:', (oppIdx) => {
                         const opp = game.players[oppIdx];
-                        const complete = Object.keys(opp.properties).find(c => opp.properties[c].length >= COLORS[c].size);
+                        const complete = Object.keys(opp.properties).find(c =>
+                            opp.properties[c].length >= COLORS[c].size
+                        );
                         if (complete) {
                             p.properties[complete] = opp.properties[complete];
                             delete opp.properties[complete];
                         }
                         p.hand.splice(idx, 1);
                         game.actions--;
-                        finishPlay();
+                        game.selectedCard = null;
+                        afterPlay();
                     });
                     break;
 
                 default:
                     p.hand.splice(idx, 1);
                     game.actions--;
-                    finishPlay();
+                    game.selectedCard = null;
+                    afterPlay();
             }
         }
 
-        function collectFromPlayer(player, amount) {
+        // Execute rent card
+        function executeRent(card, idx) {
+            const p = game.players[game.current];
+            const rentColor = card.colors[0] === 'wild' ? Object.keys(p.properties)[0] : card.colors[0];
+
+            if (rentColor && p.properties[rentColor]) {
+                const amount = p.properties[rentColor].length;
+                game.players.forEach((opp, i) => {
+                    if (i !== game.current) collectFrom(opp, amount);
+                });
+            }
+
+            p.hand.splice(idx, 1);
+            game.actions--;
+            game.selectedCard = null;
+            afterPlay();
+        }
+
+        // Collect money/property from player
+        function collectFrom(player, amount) {
             let remaining = amount;
+            const p = game.players[game.current];
+
             while (remaining > 0 && player.bank.length > 0) {
                 const card = player.bank.pop();
-                game.players[game.currentPlayer].bank.push(card);
+                p.bank.push(card);
                 remaining -= card.value;
             }
+
             if (remaining > 0) {
                 for (const color in player.properties) {
                     while (remaining > 0 && player.properties[color].length > 0) {
                         const card = player.properties[color].pop();
-                        if (!game.players[game.currentPlayer].properties[color]) {
-                            game.players[game.currentPlayer].properties[color] = [];
-                        }
-                        game.players[game.currentPlayer].properties[color].push(card);
+                        if (!p.properties[color]) p.properties[color] = [];
+                        p.properties[color].push(card);
                         remaining -= card.value;
                     }
                     if (player.properties[color].length === 0) delete player.properties[color];
@@ -890,217 +624,199 @@
             }
         }
 
-        function showPlayerSelector(title, callback) {
-            const modal = document.getElementById('action-modal');
+        // Show player picker modal
+        function showPlayerPicker(title, callback) {
+            const modal = document.getElementById('modal');
             document.getElementById('modal-title').textContent = title;
             const opts = document.getElementById('modal-options');
             opts.innerHTML = '';
 
             game.players.forEach((p, i) => {
-                if (i !== game.currentPlayer) {
-                    const btn = document.createElement('button');
-                    btn.className = 'modal-option';
+                if (i !== game.current) {
+                    const btn = document.createElement('div');
+                    btn.className = 'modal-opt';
                     btn.textContent = p.name;
-                    btn.onclick = () => { modal.classList.remove('visible'); callback(i); };
+                    btn.onclick = () => {
+                        modal.classList.remove('show');
+                        callback(i);
+                    };
                     opts.appendChild(btn);
                 }
             });
 
-            const cancel = document.createElement('button');
-            cancel.className = 'modal-option';
+            const cancel = document.createElement('div');
+            cancel.className = 'modal-opt';
             cancel.textContent = 'Cancel';
-            cancel.onclick = () => modal.classList.remove('visible');
+            cancel.onclick = () => modal.classList.remove('show');
             opts.appendChild(cancel);
 
-            modal.classList.add('visible');
+            modal.classList.add('show');
         }
 
-        function finishPlay() {
-            createHandCards();
-            renderTable();
-            updateUI();
+        // After playing a card
+        function afterPlay() {
             checkWin();
+            render();
         }
 
+        // End turn
         function endTurn() {
-            const p = game.players[game.currentPlayer];
+            const p = game.players[game.current];
             if (p.hand.length > 7) {
-                document.getElementById('instructions').textContent = 'Too many cards! Discard to 7 by dragging to table.';
+                alert('You must have 7 or fewer cards. Bank some cards!');
                 return;
             }
-            nextTurn();
-        }
 
-        function nextTurn() {
-            game.currentPlayer = (game.currentPlayer + 1) % game.players.length;
+            game.current = (game.current + 1) % game.players.length;
             game.actions = 3;
-            game.turnDrawn = false;
-            createHandCards();
-            renderTable();
-            updateUI();
-            showDrawPrompt();
+            game.drawn = false;
+            game.selectedCard = null;
+            render();
         }
 
+        // Check for winner
         function checkWin() {
-            const p = game.players[game.currentPlayer];
+            const p = game.players[game.current];
             let sets = 0;
-            for (const c in p.properties) if (p.properties[c].length >= COLORS[c].size) sets++;
+            for (const c in p.properties) {
+                if (p.properties[c].length >= COLORS[c].size) sets++;
+            }
             if (sets >= 3) {
-                document.getElementById('winner-name').textContent = `${p.name} Wins!`;
-                document.getElementById('winner-screen').classList.add('visible');
+                document.getElementById('winner-name').textContent = p.name;
+                document.getElementById('winner').classList.add('show');
             }
         }
 
-        function updateUI() {
-            const p = game.players[game.currentPlayer];
-            document.getElementById('hud-turn').textContent = `P${game.currentPlayer + 1}`;
-            document.getElementById('hud-actions').textContent = game.actions;
-
+        // Count complete sets
+        function countSets(player) {
             let sets = 0;
-            for (const c in p.properties) if (p.properties[c].length >= COLORS[c].size) sets++;
-            document.getElementById('hud-sets').textContent = `${sets}/3`;
-
-            const bank = p.bank.reduce((s, c) => s + (c.value || 0), 0);
-            document.getElementById('hud-bank').textContent = `$${bank}M`;
-
-            const endBtn = document.getElementById('end-turn-btn');
-            if (game.turnDrawn && game.actions === 0) {
-                endBtn.classList.add('visible');
-            } else if (game.turnDrawn) {
-                endBtn.classList.add('visible');
-            } else {
-                endBtn.classList.remove('visible');
+            for (const c in player.properties) {
+                if (player.properties[c].length >= COLORS[c].size) sets++;
             }
-
-            document.getElementById('instructions').textContent =
-                !game.turnDrawn ? 'Draw your cards to begin' :
-                game.actions > 0 ? `Drag cards to PLAY or BANK (${game.actions} actions left)` :
-                'Click END TURN';
+            return sets;
         }
 
-        function viewTable() {
-            const p = game.players[game.currentPlayer];
-            let msg = `YOUR TABLE\n\nProperties:\n`;
+        // Render everything
+        function render() {
+            const p = game.players[game.current];
+
+            // Update status
+            document.getElementById('turn-text').textContent =
+                game.current === 0 ? 'Your Turn' : `${p.name}'s Turn`;
+
+            let statusText = '';
+            if (!game.drawn) {
+                statusText = 'Draw cards to start';
+            } else if (game.actions > 0) {
+                statusText = `${game.actions} action${game.actions > 1 ? 's' : ''} remaining`;
+            } else {
+                statusText = 'End your turn';
+            }
+            document.getElementById('action-text').textContent = statusText;
+
+            // Update opponents
+            const oppsDiv = document.getElementById('opponents');
+            oppsDiv.innerHTML = '';
+            game.players.forEach((opp, i) => {
+                const div = document.createElement('div');
+                div.className = 'opponent' + (i === game.current ? ' active' : '');
+                div.innerHTML = `
+                    <div class="opponent-name">${opp.name}</div>
+                    <div class="opponent-cards">${opp.hand.length} cards</div>
+                    <div class="opponent-sets">${countSets(opp)}/3 sets</div>
+                `;
+                oppsDiv.appendChild(div);
+            });
+
+            // Update properties
+            const propsDiv = document.getElementById('properties');
+            propsDiv.innerHTML = '';
             for (const color in p.properties) {
-                const cards = p.properties[color];
-                const complete = cards.length >= COLORS[color].size ? ' (COMPLETE!)' : ` (${cards.length}/${COLORS[color].size})`;
-                msg += `  ${COLORS[color].name}: ${cards.map(c => c.name).join(', ')}${complete}\n`;
-            }
-            msg += `\nBank: $${p.bank.reduce((s, c) => s + c.value, 0)}M`;
-            msg += `\nCards in hand: ${p.hand.length}`;
-            alert(msg);
-        }
-
-        // ==================== INTERACTION ====================
-        function handleMouseDown(e) {
-            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-            const hits = raycaster.intersectObjects(handCards, true);
-
-            if (hits.length > 0) {
-                let obj = hits[0].object;
-                while (obj.parent && !obj.userData.isCard) obj = obj.parent;
-                if (obj.userData.isCard) {
-                    draggedCard = obj;
-                    dragStartPos = obj.position.clone();
-                    document.getElementById('drop-zones').classList.add('visible');
-                }
-            }
-        }
-
-        function handleMouseMove(e) {
-            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-
-            if (draggedCard) {
-                // Move card with mouse
-                const x = mouse.x * 2;
-                const y = 0.5 + mouse.y * 0.5;
-                draggedCard.position.x = x;
-                draggedCard.position.y = y;
-                draggedCard.position.z = 0.8;
-                draggedCard.rotation.x = -0.2;
-
-                // Highlight drop zones
-                const playZone = document.getElementById('zone-play');
-                const bankZone = document.getElementById('zone-bank');
-                playZone.classList.toggle('active', mouse.x < 0);
-                bankZone.classList.toggle('active', mouse.x >= 0);
-            } else {
-                // Hover effects
-                raycaster.setFromCamera(mouse, camera);
-                const hits = raycaster.intersectObjects(handCards, true);
-
-                handCards.forEach(card => {
-                    const isHit = hits.some(h => {
-                        let obj = h.object;
-                        while (obj.parent && !obj.userData.isCard) obj = obj.parent;
-                        return obj === card;
-                    });
-
-                    if (isHit) {
-                        card.position.z = card.userData.origPos.z + 0.15;
-                        card.position.y = card.userData.origPos.y + 0.1;
-                        showCardInfo(card.userData.cardData);
-                    } else {
-                        card.position.copy(card.userData.origPos);
-                    }
+                const row = document.createElement('div');
+                row.className = 'property-row';
+                p.properties[color].forEach(card => {
+                    const mini = document.createElement('div');
+                    mini.className = 'mini-card';
+                    mini.style.background = COLORS[color].hex;
+                    mini.textContent = card.name.substring(0, 8);
+                    row.appendChild(mini);
                 });
-
-                if (hits.length === 0) hideCardInfo();
-            }
-        }
-
-        function handleMouseUp(e) {
-            if (draggedCard && game.turnDrawn && game.actions > 0) {
-                if (mouse.x < 0) {
-                    // Dropped on PLAY zone
-                    playCard(draggedCard);
-                } else {
-                    // Dropped on BANK zone
-                    bankCard(draggedCard);
+                const complete = p.properties[color].length >= COLORS[color].size;
+                if (complete) {
+                    const badge = document.createElement('div');
+                    badge.className = 'mini-card';
+                    badge.style.background = '#4CAF50';
+                    badge.textContent = '✓';
+                    row.appendChild(badge);
                 }
-            } else if (draggedCard) {
-                // Return card to original position
-                draggedCard.position.copy(draggedCard.userData.origPos);
-                draggedCard.rotation.copy(draggedCard.userData.origRot);
+                propsDiv.appendChild(row);
             }
 
-            draggedCard = null;
-            document.getElementById('drop-zones').classList.remove('visible');
-            document.getElementById('zone-play').classList.remove('active');
-            document.getElementById('zone-bank').classList.remove('active');
+            // Update bank
+            const bankDiv = document.getElementById('bank');
+            bankDiv.innerHTML = '';
+            p.bank.forEach(card => {
+                const mini = document.createElement('div');
+                mini.className = 'mini-card';
+                mini.style.background = '#228B22';
+                mini.textContent = `$${card.value}M`;
+                bankDiv.appendChild(mini);
+            });
+            const bankTotal = p.bank.reduce((sum, c) => sum + c.value, 0);
+            document.getElementById('bank-total').textContent = `$${bankTotal}M`;
+
+            // Update hand
+            const handDiv = document.getElementById('hand');
+            handDiv.innerHTML = '';
+            p.hand.forEach((card, i) => {
+                const cardEl = createCardElement(card, i);
+                if (game.selectedCard === i) cardEl.classList.add('selected');
+                cardEl.onclick = () => selectCard(i);
+                handDiv.appendChild(cardEl);
+            });
+
+            // Update buttons
+            document.getElementById('btn-draw').disabled = game.drawn;
+            document.getElementById('btn-play').disabled = game.selectedCard === null || game.actions <= 0;
+            document.getElementById('btn-bank').disabled = game.selectedCard === null || game.actions <= 0;
+            document.getElementById('btn-end').disabled = !game.drawn;
         }
 
-        function showCardInfo(data) {
-            const info = document.getElementById('card-info');
-            document.getElementById('info-name').textContent = data.name;
-            let desc = '';
-            if (data.type === 'property') desc = `${COLORS[data.color].name} Property`;
-            else if (data.type === 'money') desc = 'Bank this for money';
-            else if (data.type === 'action') desc = data.desc || '';
-            else if (data.type === 'rent') desc = 'Charge rent';
-            else if (data.type === 'wild') desc = 'Wild property';
-            document.getElementById('info-desc').textContent = desc;
-            document.getElementById('info-value').textContent = `Value: $${data.value}M`;
-            info.classList.add('visible');
-        }
+        // Create card element
+        function createCardElement(card, index) {
+            const div = document.createElement('div');
+            div.className = 'card';
 
-        function hideCardInfo() {
-            document.getElementById('card-info').classList.remove('visible');
-        }
+            let headerColor = '#666';
+            let headerText = '';
 
-        function onResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
+            if (card.type === 'property') {
+                headerColor = COLORS[card.color].hex;
+                headerText = COLORS[card.color].name;
+            } else if (card.type === 'money') {
+                headerColor = '#228B22';
+                headerText = 'Money';
+            } else if (card.type === 'action') {
+                headerColor = '#DAA520';
+                headerText = 'Action';
+            } else if (card.type === 'rent') {
+                headerColor = '#DC143C';
+                headerText = 'Rent';
+            } else if (card.type === 'wild') {
+                headerColor = '#8A2BE2';
+                headerText = 'Wild';
+            }
 
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
+            div.innerHTML = `
+                <div class="card-header" style="background: ${headerColor}">${headerText}</div>
+                <div class="card-body">
+                    <div class="card-name">${card.name}</div>
+                    ${card.desc ? `<div class="card-desc">${card.desc}</div>` : ''}
+                </div>
+                <div class="card-value">$${card.value}</div>
+            `;
+
+            return div;
         }
     </script>
 </body>
