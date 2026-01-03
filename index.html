@@ -4,324 +4,859 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Monopoly Deal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --accent: #f59e0b;
+            --accent-glow: rgba(245, 158, 11, 0.4);
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-dark: #0f0f1a;
+            --bg-card: rgba(255,255,255,0.03);
+            --bg-glass: rgba(255,255,255,0.08);
+            --text: #f1f5f9;
+            --text-dim: #94a3b8;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-dark);
             min-height: 100vh;
             overflow: hidden;
             user-select: none;
+            color: var(--text);
         }
 
-        /* Setup Screen */
+        /* Animated background */
+        .bg-animation {
+            position: fixed; inset: 0; z-index: -1;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(245, 158, 11, 0.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 70%),
+                var(--bg-dark);
+        }
+
+        /* ========== SETUP SCREEN ========== */
         #setup {
-            position: fixed; inset: 0;
+            position: fixed; inset: 0; z-index: 1000;
             display: flex; align-items: center; justify-content: center;
-            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
-            z-index: 1000;
+            background: var(--bg-dark);
+            animation: fadeIn 0.5s ease;
         }
         #setup.hidden { display: none; }
-        .setup-box {
-            background: rgba(255,255,255,0.1);
-            padding: 40px 50px; border-radius: 20px;
-            text-align: center; backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,215,0,0.3);
-        }
-        .setup-box h1 { color: #ffd700; font-size: 32px; margin-bottom: 5px; }
-        .setup-box p { color: #aaa; margin-bottom: 30px; }
-        .setup-box select {
-            width: 100%; padding: 12px; font-size: 16px;
-            border-radius: 8px; border: none; margin-bottom: 20px;
-            background: rgba(255,255,255,0.9); cursor: pointer;
-        }
-        .setup-box button {
-            background: linear-gradient(180deg, #ffd700, #ff8c00);
-            border: none; color: #000; padding: 14px 40px;
-            font-size: 16px; font-weight: bold; border-radius: 10px;
-            cursor: pointer; transition: transform 0.2s;
-        }
-        .setup-box button:hover { transform: scale(1.05); }
 
-        /* Game Layout */
-        #game { display: none; height: 100vh; flex-direction: column; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .setup-container {
+            text-align: center;
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            font-size: 52px; font-weight: 800;
+            background: linear-gradient(135deg, var(--accent) 0%, #fbbf24 50%, var(--accent) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 60px var(--accent-glow);
+            margin-bottom: 8px;
+            letter-spacing: -2px;
+        }
+
+        .tagline {
+            color: var(--text-dim); font-size: 14px;
+            margin-bottom: 40px; letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+
+        .setup-box {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            padding: 35px 45px; border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+        }
+
+        .setup-box label {
+            display: block; text-align: left;
+            font-size: 12px; color: var(--text-dim);
+            margin-bottom: 8px; text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .setup-box select {
+            width: 100%; padding: 14px 18px; font-size: 16px;
+            border-radius: 12px; border: 2px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.3); color: var(--text);
+            margin-bottom: 25px; cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.3s;
+        }
+        .setup-box select:focus {
+            outline: none; border-color: var(--primary);
+        }
+
+        .btn-start {
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, var(--accent) 0%, #d97706 100%);
+            border: none; border-radius: 12px;
+            font-size: 16px; font-weight: 700;
+            color: #000; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--accent-glow);
+        }
+
+        /* ========== GAME LAYOUT ========== */
+        #game {
+            display: none; height: 100vh;
+            flex-direction: column;
+        }
         #game.active { display: flex; }
 
-        /* Top Bar - Opponents */
-        #opponents {
-            display: flex; justify-content: center; gap: 15px;
-            padding: 15px; background: rgba(0,0,0,0.3);
-        }
-        .opponent {
-            background: rgba(255,255,255,0.1);
-            padding: 10px 20px; border-radius: 12px;
-            color: white; text-align: center; min-width: 120px;
-            border: 2px solid transparent; transition: all 0.3s;
-        }
-        .opponent.active { border-color: #ffd700; background: rgba(255,215,0,0.2); }
-        .opponent-name { font-weight: bold; font-size: 14px; }
-        .opponent-cards { font-size: 12px; opacity: 0.7; margin-top: 3px; }
-        .opponent-sets { font-size: 11px; color: #4CAF50; margin-top: 3px; }
-
-        /* Middle - Table Area */
-        #table {
-            flex: 1; display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 20px; gap: 20px; overflow-y: auto;
-        }
-
-        /* Status Display */
-        #status {
-            background: rgba(0,0,0,0.5); padding: 15px 30px;
-            border-radius: 15px; color: white; text-align: center;
-        }
-        #status h2 { color: #ffd700; font-size: 18px; margin-bottom: 5px; }
-        #status p { font-size: 14px; opacity: 0.8; }
-
-        /* Your Table (Properties + Bank) */
-        #your-table {
-            display: flex; gap: 30px; flex-wrap: wrap; justify-content: center;
-        }
-        .table-section {
-            background: rgba(255,255,255,0.05);
-            padding: 15px; border-radius: 12px; min-width: 200px;
-        }
-        .table-section h3 {
-            color: #ffd700; font-size: 13px; margin-bottom: 10px;
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        .property-row {
-            display: flex; gap: 5px; margin-bottom: 8px; flex-wrap: wrap;
-        }
-        .mini-card {
-            width: 45px; height: 65px; border-radius: 5px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 9px; color: white; font-weight: bold;
-            text-align: center; padding: 3px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-        .bank-total { color: #4CAF50; font-size: 18px; font-weight: bold; }
-
-        /* Bottom - Your Hand */
-        #hand-area {
+        /* ========== TOP BAR ========== */
+        #top-bar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 20px;
             background: rgba(0,0,0,0.4);
-            padding: 20px; padding-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
+
+        .game-info {
+            display: flex; gap: 20px; align-items: center;
+        }
+
+        .info-badge {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--bg-glass); padding: 8px 16px;
+            border-radius: 20px; font-size: 13px;
+        }
+        .info-badge .icon { font-size: 16px; }
+        .info-badge .value { font-weight: 700; color: var(--accent); }
+
+        .deck-display {
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .deck-stack {
+            position: relative; width: 50px; height: 70px;
+        }
+        .deck-card {
+            position: absolute; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            border-radius: 6px; border: 2px solid #fca5a5;
+        }
+        .deck-card:nth-child(1) { top: 0; left: 0; }
+        .deck-card:nth-child(2) { top: -2px; left: 2px; }
+        .deck-card:nth-child(3) { top: -4px; left: 4px; }
+
+        .deck-count {
+            font-size: 24px; font-weight: 800;
+            color: var(--text);
+        }
+        .deck-label { font-size: 11px; color: var(--text-dim); text-transform: uppercase; }
+
+        #help-btn {
+            background: var(--bg-glass); border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text); padding: 10px 18px; border-radius: 10px;
+            font-size: 13px; cursor: pointer; font-family: 'Poppins', sans-serif;
+            transition: all 0.3s;
+        }
+        #help-btn:hover { background: rgba(255,255,255,0.15); }
+
+        /* ========== PLAYERS ROW ========== */
+        #players-row {
+            display: flex; justify-content: center; gap: 12px;
+            padding: 15px 20px;
+            overflow-x: auto;
+        }
+
+        .player-card {
+            background: var(--bg-glass);
+            border: 2px solid transparent;
+            border-radius: 16px; padding: 12px 18px;
+            min-width: 160px; text-align: center;
+            transition: all 0.3s; cursor: pointer;
+            position: relative;
+        }
+        .player-card.active {
+            border-color: var(--accent);
+            background: rgba(245, 158, 11, 0.1);
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+        .player-card.current::after {
+            content: 'YOUR TURN';
+            position: absolute; top: -10px; left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent); color: #000;
+            padding: 3px 10px; border-radius: 10px;
+            font-size: 9px; font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .player-avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 700;
+            margin: 0 auto 8px;
+        }
+        .player-card:nth-child(2) .player-avatar { background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); }
+        .player-card:nth-child(3) .player-avatar { background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); }
+        .player-card:nth-child(4) .player-avatar { background: linear-gradient(135deg, #f97316 0%, #c2410c 100%); }
+
+        .player-name { font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .player-stats { font-size: 11px; color: var(--text-dim); }
+        .player-sets {
+            margin-top: 6px; display: flex; justify-content: center; gap: 4px;
+        }
+        .set-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+        }
+        .set-dot.filled { background: var(--success); box-shadow: 0 0 8px var(--success); }
+
+        /* ========== MAIN AREA ========== */
+        #main-area {
+            flex: 1; display: flex; gap: 15px;
+            padding: 15px 20px; overflow: hidden;
+        }
+
+        /* Table Area */
+        #table-area {
+            flex: 1; display: flex; flex-direction: column; gap: 15px;
+            overflow-y: auto; padding-right: 10px;
+        }
+
+        .section-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-size: 12px; font-weight: 600;
+            color: var(--text-dim); text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .section-value {
+            font-size: 14px; font-weight: 700;
+            color: var(--accent);
+        }
+
+        .property-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+        .property-set {
+            background: var(--bg-glass);
+            border-radius: 12px; padding: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+        .property-set:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255,255,255,0.1);
+        }
+        .property-set.complete {
+            border-color: var(--success);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+        }
+
+        .set-header {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 8px;
+        }
+        .set-color {
+            width: 12px; height: 12px; border-radius: 3px;
+        }
+        .set-name { font-size: 11px; font-weight: 600; }
+        .set-progress { font-size: 10px; color: var(--text-dim); margin-left: auto; }
+
+        .set-cards {
+            display: flex; flex-wrap: wrap; gap: 4px;
+        }
+        .mini-prop {
+            background: rgba(0,0,0,0.3);
+            padding: 4px 8px; border-radius: 6px;
+            font-size: 9px; color: var(--text);
+            border-left: 3px solid;
+        }
+
+        /* Bank Area */
+        .bank-grid {
+            display: flex; flex-wrap: wrap; gap: 6px;
+        }
+        .bank-card {
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            padding: 8px 14px; border-radius: 8px;
+            font-size: 13px; font-weight: 700;
+            color: white;
+            box-shadow: 0 2px 8px rgba(21, 128, 61, 0.3);
+            transition: transform 0.2s;
+        }
+        .bank-card:hover { transform: scale(1.05); }
+
+        /* Game Log */
+        #log-area {
+            width: 240px; background: var(--bg-glass);
+            border-radius: 16px; padding: 15px;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex; flex-direction: column;
+        }
+
+        #log-area h3 {
+            font-size: 12px; color: var(--text-dim);
+            text-transform: uppercase; letter-spacing: 2px;
+            margin-bottom: 12px; padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        #game-log {
+            flex: 1; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+
+        .log-entry {
+            font-size: 11px; color: var(--text-dim);
+            padding: 8px 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .log-entry strong { color: var(--text); }
+        .log-entry.action { border-left: 2px solid var(--accent); }
+        .log-entry.money { border-left: 2px solid var(--success); }
+        .log-entry.property { border-left: 2px solid var(--primary); }
+
+        /* ========== HAND AREA ========== */
+        #hand-area {
+            background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.8) 100%);
+            padding: 20px; padding-top: 25px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        #turn-indicator {
+            text-align: center; margin-bottom: 15px;
+        }
+        #turn-indicator h2 {
+            font-size: 18px; font-weight: 700;
+            color: var(--text);
+        }
+        #turn-indicator p {
+            font-size: 13px; color: var(--text-dim);
+            margin-top: 4px;
+        }
+        #turn-indicator .actions-left {
+            display: inline-flex; gap: 6px; margin-top: 8px;
+        }
+        .action-pip {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+        }
+        .action-pip.filled { background: var(--accent); box-shadow: 0 0 8px var(--accent-glow); }
+
         #hand {
             display: flex; justify-content: center;
-            gap: 8px; flex-wrap: nowrap; overflow-x: auto;
-            padding: 10px 0;
+            gap: 10px; padding: 10px 0;
+            overflow-x: auto; min-height: 180px;
         }
 
         /* Cards */
         .card {
-            width: 90px; height: 130px; border-radius: 10px;
-            background: white; cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            flex-shrink: 0; position: relative;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            width: 110px; height: 160px;
+            border-radius: 12px; background: #fff;
+            cursor: pointer; position: relative;
+            flex-shrink: 0;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: bottom center;
             display: flex; flex-direction: column;
             overflow: hidden;
         }
-        .card:hover { transform: translateY(-15px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+        .card:hover {
+            transform: translateY(-20px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
         .card.selected {
-            transform: translateY(-25px);
-            box-shadow: 0 15px 40px rgba(255,215,0,0.5);
-            outline: 3px solid #ffd700;
+            transform: translateY(-35px) scale(1.08);
+            box-shadow: 0 20px 50px var(--accent-glow), 0 0 0 3px var(--accent);
+            z-index: 20;
         }
+        .card.dealing {
+            animation: dealCard 0.4s ease-out;
+        }
+        @keyframes dealCard {
+            from { opacity: 0; transform: translateY(-100px) rotate(-20deg) scale(0.5); }
+            to { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+        }
+        .card.playing {
+            animation: playCard 0.4s ease-out forwards;
+        }
+        @keyframes playCard {
+            to { opacity: 0; transform: translateY(-200px) scale(0.5) rotate(10deg); }
+        }
+
         .card-header {
-            padding: 8px 5px; color: white; font-size: 10px;
-            font-weight: bold; text-align: center;
-            text-transform: uppercase;
+            padding: 10px 8px 8px;
+            color: white; font-size: 10px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px;
+            text-align: center;
         }
+
         .card-body {
             flex: 1; display: flex; flex-direction: column;
             align-items: center; justify-content: center;
-            padding: 5px; text-align: center;
+            padding: 8px; text-align: center;
+            background: white;
         }
-        .card-name { font-size: 11px; font-weight: bold; color: #333; }
-        .card-desc { font-size: 9px; color: #666; margin-top: 3px; }
+        .card-name {
+            font-size: 12px; font-weight: 700;
+            color: #1f2937; line-height: 1.2;
+        }
+        .card-desc {
+            font-size: 9px; color: #6b7280;
+            margin-top: 4px; line-height: 1.3;
+        }
+
         .card-value {
-            position: absolute; bottom: 5px; left: 5px;
-            background: #228B22; color: white;
-            width: 24px; height: 24px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 10px; font-weight: bold;
+            position: absolute; bottom: 8px; left: 8px;
+            background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+            color: white; width: 28px; height: 28px;
+            border-radius: 50%; display: flex;
+            align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .card-type-icon {
+            position: absolute; bottom: 8px; right: 8px;
+            font-size: 18px; opacity: 0.8;
         }
 
         /* Action Buttons */
         #actions {
-            display: flex; justify-content: center; gap: 10px;
-            margin-top: 15px;
+            display: flex; justify-content: center; gap: 12px;
+            margin-top: 20px;
         }
-        .action-btn {
-            padding: 12px 25px; border-radius: 10px;
-            font-size: 14px; font-weight: bold;
-            cursor: pointer; border: none;
-            transition: transform 0.2s, opacity 0.2s;
-        }
-        .action-btn:hover:not(:disabled) { transform: scale(1.05); }
-        .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .btn-draw { background: linear-gradient(180deg, #4CAF50, #2E7D32); color: white; }
-        .btn-play { background: linear-gradient(180deg, #2196F3, #1565C0); color: white; }
-        .btn-bank { background: linear-gradient(180deg, #FF9800, #E65100); color: white; }
-        .btn-end { background: linear-gradient(180deg, #9C27B0, #6A1B9A); color: white; }
 
-        /* Winner Screen */
-        #winner {
+        .action-btn {
+            padding: 14px 28px; border-radius: 12px;
+            font-size: 13px; font-weight: 700;
+            cursor: pointer; border: none;
+            font-family: 'Poppins', sans-serif;
+            text-transform: uppercase; letter-spacing: 1px;
+            transition: all 0.3s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .action-btn:hover:not(:disabled) { transform: translateY(-2px); }
+        .action-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; }
+
+        .btn-draw {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+        .btn-play {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+        .btn-bank {
+            background: linear-gradient(135deg, var(--accent) 0%, #d97706 100%);
+            color: #000;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+        .btn-end {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(107, 114, 128, 0.4);
+        }
+
+        /* Keyboard hints */
+        .key-hint {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 6px; border-radius: 4px;
+            font-size: 10px; opacity: 0.7;
+        }
+
+        /* ========== CARD ZOOM OVERLAY ========== */
+        #card-zoom {
             position: fixed; inset: 0;
             background: rgba(0,0,0,0.9);
+            display: none; align-items: center; justify-content: center;
+            z-index: 500; cursor: pointer;
+        }
+        #card-zoom.show { display: flex; }
+
+        .zoomed-card {
+            width: 280px; height: 400px;
+            border-radius: 20px; background: white;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            animation: zoomIn 0.3s ease;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .zoomed-card .card-header {
+            padding: 25px 20px; font-size: 14px;
+        }
+        .zoomed-card .card-body { padding: 20px; }
+        .zoomed-card .card-name { font-size: 22px; }
+        .zoomed-card .card-desc { font-size: 14px; margin-top: 10px; }
+        .zoomed-card .card-value {
+            width: 50px; height: 50px; font-size: 18px;
+            bottom: 20px; left: 20px;
+        }
+
+        .zoom-hint {
+            position: absolute; bottom: 30px;
+            color: var(--text-dim); font-size: 13px;
+        }
+
+        /* ========== MODALS ========== */
+        .modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.85);
+            display: none; align-items: center; justify-content: center;
+            z-index: 600;
+        }
+        .modal-overlay.show { display: flex; }
+
+        .modal-box {
+            background: var(--bg-dark);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px; padding: 30px;
+            min-width: 320px; text-align: center;
+            animation: zoomIn 0.3s ease;
+        }
+
+        .modal-box h2 {
+            color: var(--accent); font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .modal-options {
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .modal-opt {
+            padding: 14px 20px;
+            background: var(--bg-glass);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; color: var(--text);
+            cursor: pointer; transition: all 0.3s;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+        }
+        .modal-opt:hover {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: var(--accent);
+            transform: translateX(5px);
+        }
+
+        /* ========== WINNER SCREEN ========== */
+        #winner {
+            position: fixed; inset: 0;
+            background: var(--bg-dark);
             display: none; align-items: center; justify-content: center;
             z-index: 1000;
         }
         #winner.show { display: flex; }
-        .winner-box { text-align: center; }
-        .winner-box h1 { color: #ffd700; font-size: 48px; margin-bottom: 10px; }
-        .winner-box p { color: white; font-size: 24px; margin-bottom: 30px; }
-        .winner-box button {
-            background: linear-gradient(180deg, #ffd700, #ff8c00);
-            border: none; color: #000; padding: 15px 40px;
-            font-size: 16px; font-weight: bold; border-radius: 10px;
-            cursor: pointer;
+
+        .winner-content {
+            text-align: center;
+            animation: winnerPop 0.6s ease;
+        }
+        @keyframes winnerPop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
-        /* Modal for player selection */
-        #modal {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.8);
-            display: none; align-items: center; justify-content: center;
-            z-index: 500;
+        .winner-crown { font-size: 80px; margin-bottom: 20px; }
+        .winner-title {
+            font-size: 48px; font-weight: 800;
+            background: linear-gradient(135deg, var(--accent) 0%, #fbbf24 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
         }
-        #modal.show { display: flex; }
-        .modal-box {
-            background: #1a1a2e; border: 2px solid #ffd700;
-            border-radius: 15px; padding: 25px; text-align: center;
-            min-width: 280px;
+        .winner-name { font-size: 28px; color: var(--text); margin-bottom: 40px; }
+        .winner-btn {
+            background: linear-gradient(135deg, var(--accent) 0%, #d97706 100%);
+            border: none; color: #000; padding: 16px 40px;
+            font-size: 16px; font-weight: 700; border-radius: 12px;
+            cursor: pointer; font-family: 'Poppins', sans-serif;
+            transition: transform 0.3s;
         }
-        .modal-box h3 { color: #ffd700; margin-bottom: 15px; }
-        .modal-options { display: flex; flex-direction: column; gap: 10px; }
-        .modal-opt {
-            padding: 12px; background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 8px; color: white; cursor: pointer;
-            transition: all 0.2s;
-        }
-        .modal-opt:hover { background: rgba(255,215,0,0.2); border-color: #ffd700; }
+        .winner-btn:hover { transform: scale(1.05); }
 
-        /* Responsive */
+        /* Confetti */
+        .confetti {
+            position: fixed; width: 10px; height: 10px;
+            top: -10px; animation: confettiFall 3s linear forwards;
+        }
+        @keyframes confettiFall {
+            to { top: 110vh; transform: rotate(720deg); }
+        }
+
+        /* ========== HELP MODAL ========== */
+        .help-content {
+            text-align: left; max-width: 500px;
+        }
+        .help-content h2 { text-align: center; margin-bottom: 25px; }
+        .help-section {
+            margin-bottom: 20px;
+        }
+        .help-section h3 {
+            font-size: 14px; color: var(--accent);
+            margin-bottom: 8px;
+        }
+        .help-section p, .help-section li {
+            font-size: 13px; color: var(--text-dim);
+            line-height: 1.6;
+        }
+        .help-section ul { padding-left: 20px; }
+        .help-close {
+            margin-top: 20px; width: 100%;
+            padding: 12px; background: var(--primary);
+            border: none; border-radius: 10px;
+            color: white; font-weight: 600;
+            cursor: pointer; font-family: 'Poppins', sans-serif;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 900px) {
+            #log-area { display: none; }
+            #main-area { padding: 10px; }
+        }
+
         @media (max-width: 600px) {
-            .card { width: 70px; height: 100px; }
-            .card-header { font-size: 8px; padding: 5px 3px; }
-            .card-name { font-size: 9px; }
-            .card-value { width: 20px; height: 20px; font-size: 8px; }
-            .action-btn { padding: 10px 18px; font-size: 12px; }
+            .logo { font-size: 36px; }
+            .card { width: 85px; height: 125px; }
+            .card-header { padding: 6px; font-size: 8px; }
+            .card-name { font-size: 10px; }
+            .card-value { width: 22px; height: 22px; font-size: 9px; }
+            .action-btn { padding: 12px 18px; font-size: 11px; }
+            .key-hint { display: none; }
+            .player-card { min-width: 100px; padding: 8px 12px; }
+            #hand { gap: 6px; }
         }
     </style>
 </head>
 <body>
+    <div class="bg-animation"></div>
+
+    <!-- Setup Screen -->
     <div id="setup">
-        <div class="setup-box">
-            <h1>Monopoly Deal</h1>
-            <p>The Card Game</p>
-            <select id="player-count">
-                <option value="2">2 Players</option>
-                <option value="3">3 Players</option>
-                <option value="4">4 Players</option>
-            </select>
-            <button onclick="startGame()">Play</button>
+        <div class="setup-container">
+            <div class="logo">MONOPOLY DEAL</div>
+            <div class="tagline">The Card Game</div>
+            <div class="setup-box">
+                <label>Number of Players</label>
+                <select id="player-count">
+                    <option value="2">2 Players</option>
+                    <option value="3">3 Players</option>
+                    <option value="4">4 Players</option>
+                </select>
+                <button class="btn-start" onclick="startGame()">Start Game</button>
+            </div>
         </div>
     </div>
 
+    <!-- Game Screen -->
     <div id="game">
-        <div id="opponents"></div>
-        <div id="table">
-            <div id="status">
-                <h2 id="turn-text">Your Turn</h2>
-                <p id="action-text">Draw 2 cards to start</p>
+        <div id="top-bar">
+            <div class="game-info">
+                <div class="deck-display">
+                    <div class="deck-stack">
+                        <div class="deck-card"></div>
+                        <div class="deck-card"></div>
+                        <div class="deck-card"></div>
+                    </div>
+                    <div>
+                        <div class="deck-count" id="deck-count">106</div>
+                        <div class="deck-label">Cards Left</div>
+                    </div>
+                </div>
             </div>
-            <div id="your-table">
-                <div class="table-section" id="properties-section">
-                    <h3>Your Properties</h3>
-                    <div id="properties"></div>
+            <button id="help-btn" onclick="showHelp()">How to Play</button>
+        </div>
+
+        <div id="players-row"></div>
+
+        <div id="main-area">
+            <div id="table-area">
+                <div id="properties-section">
+                    <div class="section-header">
+                        <span class="section-title">Your Properties</span>
+                        <span class="section-value" id="sets-count">0/3 Sets</span>
+                    </div>
+                    <div class="property-grid" id="properties"></div>
                 </div>
-                <div class="table-section" id="bank-section">
-                    <h3>Your Bank</h3>
-                    <div id="bank"></div>
-                    <div class="bank-total" id="bank-total">$0M</div>
+
+                <div id="bank-section">
+                    <div class="section-header">
+                        <span class="section-title">Your Bank</span>
+                        <span class="section-value" id="bank-total">$0M</span>
+                    </div>
+                    <div class="bank-grid" id="bank"></div>
                 </div>
+            </div>
+
+            <div id="log-area">
+                <h3>Game Log</h3>
+                <div id="game-log"></div>
             </div>
         </div>
+
         <div id="hand-area">
+            <div id="turn-indicator">
+                <h2 id="turn-text">Your Turn</h2>
+                <p id="action-text">Draw cards to begin</p>
+                <div class="actions-left" id="action-pips"></div>
+            </div>
             <div id="hand"></div>
             <div id="actions">
-                <button class="action-btn btn-draw" id="btn-draw" onclick="drawCards()">Draw Cards</button>
-                <button class="action-btn btn-play" id="btn-play" onclick="playSelected()" disabled>Play</button>
-                <button class="action-btn btn-bank" id="btn-bank" onclick="bankSelected()" disabled>Bank</button>
-                <button class="action-btn btn-end" id="btn-end" onclick="endTurn()" disabled>End Turn</button>
+                <button class="action-btn btn-draw" id="btn-draw" onclick="drawCards()">
+                    Draw <span class="key-hint">D</span>
+                </button>
+                <button class="action-btn btn-play" id="btn-play" onclick="playSelected()" disabled>
+                    Play <span class="key-hint">P</span>
+                </button>
+                <button class="action-btn btn-bank" id="btn-bank" onclick="bankSelected()" disabled>
+                    Bank <span class="key-hint">B</span>
+                </button>
+                <button class="action-btn btn-end" id="btn-end" onclick="endTurn()" disabled>
+                    End Turn <span class="key-hint">E</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <div id="winner">
-        <div class="winner-box">
-            <h1>Winner!</h1>
-            <p id="winner-name">Player 1</p>
-            <button onclick="location.reload()">Play Again</button>
-        </div>
+    <!-- Card Zoom -->
+    <div id="card-zoom" onclick="closeZoom()">
+        <div class="zoomed-card" id="zoomed-card-content"></div>
+        <div class="zoom-hint">Click anywhere to close</div>
     </div>
 
-    <div id="modal">
+    <!-- Player Select Modal -->
+    <div class="modal-overlay" id="modal">
         <div class="modal-box">
-            <h3 id="modal-title">Choose</h3>
+            <h2 id="modal-title">Choose Player</h2>
             <div class="modal-options" id="modal-options"></div>
         </div>
     </div>
 
+    <!-- Help Modal -->
+    <div class="modal-overlay" id="help-modal">
+        <div class="modal-box help-content">
+            <h2>How to Play</h2>
+            <div class="help-section">
+                <h3>Goal</h3>
+                <p>Be the first to collect 3 complete property sets!</p>
+            </div>
+            <div class="help-section">
+                <h3>Each Turn</h3>
+                <ul>
+                    <li>Draw 2 cards (or 5 if your hand is empty)</li>
+                    <li>Play up to 3 cards</li>
+                    <li>End with 7 or fewer cards in hand</li>
+                </ul>
+            </div>
+            <div class="help-section">
+                <h3>Card Types</h3>
+                <ul>
+                    <li><strong>Properties</strong> - Collect sets to win</li>
+                    <li><strong>Money</strong> - Bank for payments</li>
+                    <li><strong>Actions</strong> - Special effects</li>
+                    <li><strong>Rent</strong> - Charge other players</li>
+                    <li><strong>Wild</strong> - Use as any color</li>
+                </ul>
+            </div>
+            <div class="help-section">
+                <h3>Keyboard Shortcuts</h3>
+                <p>D = Draw, P = Play, B = Bank, E = End Turn, 1-9 = Select card</p>
+            </div>
+            <button class="help-close" onclick="closeHelp()">Got it!</button>
+        </div>
+    </div>
+
+    <!-- Winner Screen -->
+    <div id="winner">
+        <div class="winner-content">
+            <div class="winner-crown">👑</div>
+            <div class="winner-title">WINNER!</div>
+            <div class="winner-name" id="winner-name">Player 1</div>
+            <button class="winner-btn" onclick="location.reload()">Play Again</button>
+        </div>
+    </div>
+
     <script>
-        // Color definitions
+        // ==================== DATA ====================
         const COLORS = {
-            brown: { hex: '#8B4513', name: 'Brown', size: 2 },
-            lightBlue: { hex: '#87CEEB', name: 'Light Blue', size: 3 },
-            pink: { hex: '#FF69B4', name: 'Pink', size: 3 },
-            orange: { hex: '#FF8C00', name: 'Orange', size: 3 },
-            red: { hex: '#DC143C', name: 'Red', size: 3 },
-            yellow: { hex: '#FFD700', name: 'Yellow', size: 3 },
-            green: { hex: '#228B22', name: 'Green', size: 3 },
-            blue: { hex: '#0000CD', name: 'Dark Blue', size: 2 },
-            railroad: { hex: '#333', name: 'Railroad', size: 4 },
-            utility: { hex: '#90EE90', name: 'Utility', size: 2 }
+            brown: { hex: '#92400e', name: 'Brown', size: 2 },
+            lightBlue: { hex: '#0ea5e9', name: 'Light Blue', size: 3 },
+            pink: { hex: '#ec4899', name: 'Pink', size: 3 },
+            orange: { hex: '#f97316', name: 'Orange', size: 3 },
+            red: { hex: '#ef4444', name: 'Red', size: 3 },
+            yellow: { hex: '#eab308', name: 'Yellow', size: 3 },
+            green: { hex: '#22c55e', name: 'Green', size: 3 },
+            blue: { hex: '#3b82f6', name: 'Dark Blue', size: 2 },
+            railroad: { hex: '#374151', name: 'Railroad', size: 4 },
+            utility: { hex: '#a3e635', name: 'Utility', size: 2 }
         };
 
-        // Card definitions
         const CARDS = {
             properties: [
-                { name: 'Mediterranean', color: 'brown', value: 1 },
-                { name: 'Baltic Ave', color: 'brown', value: 1 },
-                { name: 'Oriental Ave', color: 'lightBlue', value: 1 },
-                { name: 'Vermont Ave', color: 'lightBlue', value: 1 },
-                { name: 'Connecticut', color: 'lightBlue', value: 1 },
-                { name: 'St. Charles', color: 'pink', value: 2 },
-                { name: 'States Ave', color: 'pink', value: 2 },
-                { name: 'Virginia Ave', color: 'pink', value: 2 },
-                { name: 'St. James', color: 'orange', value: 2 },
-                { name: 'Tennessee', color: 'orange', value: 2 },
-                { name: 'New York Ave', color: 'orange', value: 2 },
-                { name: 'Kentucky Ave', color: 'red', value: 3 },
-                { name: 'Indiana Ave', color: 'red', value: 3 },
-                { name: 'Illinois Ave', color: 'red', value: 3 },
-                { name: 'Atlantic Ave', color: 'yellow', value: 3 },
-                { name: 'Ventnor Ave', color: 'yellow', value: 3 },
-                { name: 'Marvin Gdns', color: 'yellow', value: 3 },
-                { name: 'Pacific Ave', color: 'green', value: 4 },
-                { name: 'N. Carolina', color: 'green', value: 4 },
-                { name: 'Pennsylvania', color: 'green', value: 4 },
+                { name: 'Mediterranean Ave', color: 'brown', value: 1 },
+                { name: 'Baltic Avenue', color: 'brown', value: 1 },
+                { name: 'Oriental Avenue', color: 'lightBlue', value: 1 },
+                { name: 'Vermont Avenue', color: 'lightBlue', value: 1 },
+                { name: 'Connecticut Ave', color: 'lightBlue', value: 1 },
+                { name: 'St. Charles Place', color: 'pink', value: 2 },
+                { name: 'States Avenue', color: 'pink', value: 2 },
+                { name: 'Virginia Avenue', color: 'pink', value: 2 },
+                { name: 'St. James Place', color: 'orange', value: 2 },
+                { name: 'Tennessee Ave', color: 'orange', value: 2 },
+                { name: 'New York Avenue', color: 'orange', value: 2 },
+                { name: 'Kentucky Avenue', color: 'red', value: 3 },
+                { name: 'Indiana Avenue', color: 'red', value: 3 },
+                { name: 'Illinois Avenue', color: 'red', value: 3 },
+                { name: 'Atlantic Avenue', color: 'yellow', value: 3 },
+                { name: 'Ventnor Avenue', color: 'yellow', value: 3 },
+                { name: 'Marvin Gardens', color: 'yellow', value: 3 },
+                { name: 'Pacific Avenue', color: 'green', value: 4 },
+                { name: 'N. Carolina Ave', color: 'green', value: 4 },
+                { name: 'Pennsylvania Ave', color: 'green', value: 4 },
                 { name: 'Park Place', color: 'blue', value: 4 },
                 { name: 'Boardwalk', color: 'blue', value: 4 },
-                { name: 'Reading RR', color: 'railroad', value: 2 },
-                { name: 'Penn. RR', color: 'railroad', value: 2 },
-                { name: 'B&O RR', color: 'railroad', value: 2 },
-                { name: 'Short Line', color: 'railroad', value: 2 },
-                { name: 'Electric Co', color: 'utility', value: 2 },
+                { name: 'Reading Railroad', color: 'railroad', value: 2 },
+                { name: 'Pennsylvania RR', color: 'railroad', value: 2 },
+                { name: 'B&O Railroad', color: 'railroad', value: 2 },
+                { name: 'Short Line RR', color: 'railroad', value: 2 },
+                { name: 'Electric Company', color: 'utility', value: 2 },
                 { name: 'Water Works', color: 'utility', value: 2 },
             ],
             money: [
@@ -329,16 +864,16 @@
                 { value: 4, count: 3 }, { value: 5, count: 2 }, { value: 10, count: 1 }
             ],
             actions: [
-                { name: 'Deal Breaker', desc: 'Steal complete set', value: 5, count: 2, action: 'dealBreaker' },
-                { name: 'Just Say No', desc: 'Block any action', value: 4, count: 3, action: 'justSayNo' },
-                { name: 'Sly Deal', desc: 'Steal 1 property', value: 3, count: 3, action: 'slyDeal' },
-                { name: 'Forced Deal', desc: 'Swap properties', value: 3, count: 3, action: 'forcedDeal' },
-                { name: 'Debt Collector', desc: 'Collect $5M', value: 3, count: 3, action: 'debtCollector' },
-                { name: 'Birthday', desc: 'All pay $2M', value: 2, count: 3, action: 'birthday' },
-                { name: 'Pass Go', desc: 'Draw 2 cards', value: 1, count: 10, action: 'passGo' },
-                { name: 'House', desc: '+$3M rent', value: 3, count: 3, action: 'house' },
-                { name: 'Hotel', desc: '+$4M rent', value: 4, count: 2, action: 'hotel' },
-                { name: 'Double Rent', desc: '2x rent', value: 1, count: 2, action: 'doubleRent' }
+                { name: 'Deal Breaker', desc: 'Steal a complete property set from any player', value: 5, count: 2, action: 'dealBreaker', icon: '💥' },
+                { name: 'Just Say No', desc: 'Cancel any action played against you', value: 4, count: 3, action: 'justSayNo', icon: '🚫' },
+                { name: 'Sly Deal', desc: 'Steal a single property from any player', value: 3, count: 3, action: 'slyDeal', icon: '🦊' },
+                { name: 'Forced Deal', desc: 'Swap one of your properties with another player', value: 3, count: 3, action: 'forcedDeal', icon: '🔄' },
+                { name: 'Debt Collector', desc: 'Force one player to pay you $5M', value: 3, count: 3, action: 'debtCollector', icon: '💰' },
+                { name: 'It\'s My Birthday', desc: 'All players must pay you $2M', value: 2, count: 3, action: 'birthday', icon: '🎂' },
+                { name: 'Pass Go', desc: 'Draw 2 extra cards from the deck', value: 1, count: 10, action: 'passGo', icon: '▶️' },
+                { name: 'House', desc: 'Add to a complete set for +$3M rent', value: 3, count: 3, action: 'house', icon: '🏠' },
+                { name: 'Hotel', desc: 'Add to a set with house for +$4M rent', value: 4, count: 2, action: 'hotel', icon: '🏨' },
+                { name: 'Double Rent', desc: 'Double the rent on your next rent card', value: 1, count: 2, action: 'doubleRent', icon: '✖️' }
             ],
             rent: [
                 { colors: ['brown', 'lightBlue'], value: 1, count: 2 },
@@ -359,46 +894,39 @@
             ]
         };
 
-        // Game state
+        // ==================== GAME STATE ====================
         let game = {
             players: [],
             current: 0,
             deck: [],
             actions: 3,
             drawn: false,
-            selectedCard: null
+            selectedCard: null,
+            log: []
         };
 
-        // Create deck
+        // ==================== INITIALIZATION ====================
         function createDeck() {
             const deck = [];
             let id = 0;
 
-            CARDS.properties.forEach(p => {
-                deck.push({ id: id++, type: 'property', ...p });
-            });
-
+            CARDS.properties.forEach(p => deck.push({ id: id++, type: 'property', ...p }));
             CARDS.money.forEach(m => {
-                for (let i = 0; i < m.count; i++) {
-                    deck.push({ id: id++, type: 'money', name: `$${m.value}M`, value: m.value });
-                }
+                for (let i = 0; i < m.count; i++) deck.push({ id: id++, type: 'money', name: `$${m.value}M`, value: m.value });
             });
-
             CARDS.actions.forEach(a => {
-                for (let i = 0; i < a.count; i++) {
-                    deck.push({ id: id++, type: 'action', ...a });
-                }
+                for (let i = 0; i < a.count; i++) deck.push({ id: id++, type: 'action', ...a });
             });
-
             CARDS.rent.forEach(r => {
                 for (let i = 0; i < r.count; i++) {
-                    deck.push({ id: id++, type: 'rent', name: 'Rent', colors: r.colors, value: r.value });
+                    const name = r.colors[0] === 'wild' ? 'Wild Rent' : `${COLORS[r.colors[0]].name}/${COLORS[r.colors[1]].name} Rent`;
+                    deck.push({ id: id++, type: 'rent', name, colors: r.colors, value: r.value });
                 }
             });
-
             CARDS.wilds.forEach(w => {
                 for (let i = 0; i < w.count; i++) {
-                    deck.push({ id: id++, type: 'wild', name: 'Wild Card', colors: w.colors, value: 0 });
+                    const name = w.colors[0] === 'wild' ? 'Rainbow Wild' : `${COLORS[w.colors[0]].name}/${COLORS[w.colors[1]].name} Wild`;
+                    deck.push({ id: id++, type: 'wild', name, colors: w.colors, value: 0 });
                 }
             });
 
@@ -407,11 +935,9 @@
                 const j = Math.floor(Math.random() * (i + 1));
                 [deck[i], deck[j]] = [deck[j], deck[i]];
             }
-
             return deck;
         }
 
-        // Start game
         function startGame() {
             const count = parseInt(document.getElementById('player-count').value);
             game.deck = createDeck();
@@ -420,89 +946,118 @@
             game.actions = 3;
             game.drawn = false;
             game.selectedCard = null;
+            game.log = [];
 
             for (let i = 0; i < count; i++) {
-                const p = { name: `Player ${i + 1}`, hand: [], properties: {}, bank: [] };
+                game.players.push({
+                    name: `Player ${i + 1}`,
+                    hand: [],
+                    properties: {},
+                    bank: []
+                });
                 for (let j = 0; j < 5; j++) {
-                    if (game.deck.length) p.hand.push(game.deck.pop());
+                    if (game.deck.length) game.players[i].hand.push(game.deck.pop());
                 }
-                game.players.push(p);
             }
 
+            addLog(`Game started with ${count} players`, 'action');
             document.getElementById('setup').classList.add('hidden');
             document.getElementById('game').classList.add('active');
             render();
         }
 
-        // Draw cards
+        // ==================== GAME ACTIONS ====================
         function drawCards() {
             if (game.drawn) return;
             const p = game.players[game.current];
             const count = p.hand.length === 0 ? 5 : 2;
+            const startLen = p.hand.length;
+
             for (let i = 0; i < count; i++) {
                 if (game.deck.length) p.hand.push(game.deck.pop());
             }
+
             game.drawn = true;
             game.selectedCard = null;
+            addLog(`${p.name} drew ${count} cards`, 'action');
             render();
+
+            // Animate new cards
+            setTimeout(() => {
+                const cards = document.querySelectorAll('#hand .card');
+                cards.forEach((card, i) => {
+                    if (i >= startLen) {
+                        card.classList.add('dealing');
+                        card.style.animationDelay = `${(i - startLen) * 0.1}s`;
+                    }
+                });
+            }, 50);
         }
 
-        // Select card
         function selectCard(index) {
             if (!game.drawn || game.actions <= 0) return;
-            if (game.selectedCard === index) {
-                game.selectedCard = null;
-            } else {
-                game.selectedCard = index;
-            }
+            game.selectedCard = game.selectedCard === index ? null : index;
             render();
         }
 
-        // Play selected card
         function playSelected() {
             if (game.selectedCard === null || game.actions <= 0) return;
             const p = game.players[game.current];
             const card = p.hand[game.selectedCard];
+            const idx = game.selectedCard;
 
-            if (card.type === 'property') {
-                if (!p.properties[card.color]) p.properties[card.color] = [];
-                p.properties[card.color].push(card);
-                p.hand.splice(game.selectedCard, 1);
-                game.actions--;
-                game.selectedCard = null;
-                afterPlay();
-            } else if (card.type === 'wild') {
-                const color = card.colors[0] === 'wild' ? 'brown' : card.colors[0];
-                if (!p.properties[color]) p.properties[color] = [];
-                p.properties[color].push(card);
-                p.hand.splice(game.selectedCard, 1);
-                game.actions--;
-                game.selectedCard = null;
-                afterPlay();
-            } else if (card.type === 'action') {
-                executeAction(card, game.selectedCard);
-            } else if (card.type === 'rent') {
-                executeRent(card, game.selectedCard);
-            } else {
-                // Money cards can't be played as action
-                game.selectedCard = null;
-                render();
-            }
+            // Animate card
+            const cardEl = document.querySelectorAll('#hand .card')[idx];
+            if (cardEl) cardEl.classList.add('playing');
+
+            setTimeout(() => {
+                if (card.type === 'property') {
+                    if (!p.properties[card.color]) p.properties[card.color] = [];
+                    p.properties[card.color].push(card);
+                    p.hand.splice(idx, 1);
+                    game.actions--;
+                    addLog(`${p.name} played ${card.name}`, 'property');
+                    game.selectedCard = null;
+                    afterPlay();
+                } else if (card.type === 'wild') {
+                    const color = card.colors[0] === 'wild' ? 'brown' : card.colors[0];
+                    if (!p.properties[color]) p.properties[color] = [];
+                    p.properties[color].push(card);
+                    p.hand.splice(idx, 1);
+                    game.actions--;
+                    addLog(`${p.name} played ${card.name} as ${COLORS[color].name}`, 'property');
+                    game.selectedCard = null;
+                    afterPlay();
+                } else if (card.type === 'action') {
+                    executeAction(card, idx);
+                } else if (card.type === 'rent') {
+                    executeRent(card, idx);
+                } else {
+                    game.selectedCard = null;
+                    render();
+                }
+            }, 300);
         }
 
-        // Bank selected card
         function bankSelected() {
             if (game.selectedCard === null || game.actions <= 0) return;
             const p = game.players[game.current];
             const card = p.hand[game.selectedCard];
-            p.bank.push(card);
-            p.hand.splice(game.selectedCard, 1);
-            game.actions--;
-            game.selectedCard = null;
-            afterPlay();
+            const idx = game.selectedCard;
+
+            const cardEl = document.querySelectorAll('#hand .card')[idx];
+            if (cardEl) cardEl.classList.add('playing');
+
+            setTimeout(() => {
+                p.bank.push(card);
+                p.hand.splice(idx, 1);
+                game.actions--;
+                addLog(`${p.name} banked $${card.value}M`, 'money');
+                game.selectedCard = null;
+                afterPlay();
+            }, 300);
         }
 
-        // Execute action card
         function executeAction(card, idx) {
             const p = game.players[game.current];
 
@@ -513,6 +1068,7 @@
                     }
                     p.hand.splice(idx, 1);
                     game.actions--;
+                    addLog(`${p.name} played Pass Go (+2 cards)`, 'action');
                     game.selectedCard = null;
                     afterPlay();
                     break;
@@ -523,6 +1079,7 @@
                     });
                     p.hand.splice(idx, 1);
                     game.actions--;
+                    addLog(`${p.name} celebrated birthday! ($2M from all)`, 'action');
                     game.selectedCard = null;
                     afterPlay();
                     break;
@@ -532,6 +1089,7 @@
                         collectFrom(game.players[oppIdx], 5);
                         p.hand.splice(idx, 1);
                         game.actions--;
+                        addLog(`${p.name} collected debt from ${game.players[oppIdx].name}`, 'action');
                         game.selectedCard = null;
                         afterPlay();
                     });
@@ -549,6 +1107,7 @@
                             if (!p.properties[color]) p.properties[color] = [];
                             p.properties[color].push(stolen);
                             if (opp.properties[color].length === 0) delete opp.properties[color];
+                            addLog(`${p.name} stole ${stolen.name} from ${opp.name}`, 'action');
                         }
                         p.hand.splice(idx, 1);
                         game.actions--;
@@ -566,6 +1125,7 @@
                         if (complete) {
                             p.properties[complete] = opp.properties[complete];
                             delete opp.properties[complete];
+                            addLog(`${p.name} stole ${COLORS[complete].name} set from ${opp.name}!`, 'action');
                         }
                         p.hand.splice(idx, 1);
                         game.actions--;
@@ -577,12 +1137,12 @@
                 default:
                     p.hand.splice(idx, 1);
                     game.actions--;
+                    addLog(`${p.name} played ${card.name}`, 'action');
                     game.selectedCard = null;
                     afterPlay();
             }
         }
 
-        // Execute rent card
         function executeRent(card, idx) {
             const p = game.players[game.current];
             const rentColor = card.colors[0] === 'wild' ? Object.keys(p.properties)[0] : card.colors[0];
@@ -592,6 +1152,7 @@
                 game.players.forEach((opp, i) => {
                     if (i !== game.current) collectFrom(opp, amount);
                 });
+                addLog(`${p.name} charged $${amount}M rent on ${COLORS[rentColor].name}`, 'money');
             }
 
             p.hand.splice(idx, 1);
@@ -600,7 +1161,6 @@
             afterPlay();
         }
 
-        // Collect money/property from player
         function collectFrom(player, amount) {
             let remaining = amount;
             const p = game.players[game.current];
@@ -624,7 +1184,6 @@
             }
         }
 
-        // Show player picker modal
         function showPlayerPicker(title, callback) {
             const modal = document.getElementById('modal');
             document.getElementById('modal-title').textContent = title;
@@ -633,40 +1192,37 @@
 
             game.players.forEach((p, i) => {
                 if (i !== game.current) {
-                    const btn = document.createElement('div');
+                    const btn = document.createElement('button');
                     btn.className = 'modal-opt';
                     btn.textContent = p.name;
-                    btn.onclick = () => {
-                        modal.classList.remove('show');
-                        callback(i);
-                    };
+                    btn.onclick = () => { modal.classList.remove('show'); callback(i); };
                     opts.appendChild(btn);
                 }
             });
 
-            const cancel = document.createElement('div');
+            const cancel = document.createElement('button');
             cancel.className = 'modal-opt';
             cancel.textContent = 'Cancel';
+            cancel.style.opacity = '0.6';
             cancel.onclick = () => modal.classList.remove('show');
             opts.appendChild(cancel);
 
             modal.classList.add('show');
         }
 
-        // After playing a card
         function afterPlay() {
             checkWin();
             render();
         }
 
-        // End turn
         function endTurn() {
             const p = game.players[game.current];
             if (p.hand.length > 7) {
-                alert('You must have 7 or fewer cards. Bank some cards!');
+                addLog(`${p.name} must discard to 7 cards`, 'action');
                 return;
             }
 
+            addLog(`${p.name} ended their turn`, 'action');
             game.current = (game.current + 1) % game.players.length;
             game.actions = 3;
             game.drawn = false;
@@ -674,20 +1230,16 @@
             render();
         }
 
-        // Check for winner
         function checkWin() {
             const p = game.players[game.current];
-            let sets = 0;
-            for (const c in p.properties) {
-                if (p.properties[c].length >= COLORS[c].size) sets++;
-            }
+            let sets = countSets(p);
             if (sets >= 3) {
-                document.getElementById('winner-name').textContent = p.name;
+                document.getElementById('winner-name').textContent = p.name + ' Wins!';
                 document.getElementById('winner').classList.add('show');
+                createConfetti();
             }
         }
 
-        // Count complete sets
         function countSets(player) {
             let sets = 0;
             for (const c in player.properties) {
@@ -696,115 +1248,140 @@
             return sets;
         }
 
-        // Render everything
+        // ==================== LOGGING ====================
+        function addLog(message, type = '') {
+            game.log.unshift({ message, type, time: new Date() });
+            if (game.log.length > 50) game.log.pop();
+        }
+
+        // ==================== RENDERING ====================
         function render() {
             const p = game.players[game.current];
 
-            // Update status
-            document.getElementById('turn-text').textContent =
-                game.current === 0 ? 'Your Turn' : `${p.name}'s Turn`;
+            // Deck count
+            document.getElementById('deck-count').textContent = game.deck.length;
 
-            let statusText = '';
-            if (!game.drawn) {
-                statusText = 'Draw cards to start';
-            } else if (game.actions > 0) {
-                statusText = `${game.actions} action${game.actions > 1 ? 's' : ''} remaining`;
-            } else {
-                statusText = 'End your turn';
-            }
-            document.getElementById('action-text').textContent = statusText;
-
-            // Update opponents
-            const oppsDiv = document.getElementById('opponents');
-            oppsDiv.innerHTML = '';
-            game.players.forEach((opp, i) => {
+            // Players row
+            const playersRow = document.getElementById('players-row');
+            playersRow.innerHTML = '';
+            game.players.forEach((player, i) => {
+                const sets = countSets(player);
                 const div = document.createElement('div');
-                div.className = 'opponent' + (i === game.current ? ' active' : '');
+                div.className = 'player-card' + (i === game.current ? ' active current' : '');
                 div.innerHTML = `
-                    <div class="opponent-name">${opp.name}</div>
-                    <div class="opponent-cards">${opp.hand.length} cards</div>
-                    <div class="opponent-sets">${countSets(opp)}/3 sets</div>
+                    <div class="player-avatar">${player.name[0]}${i + 1}</div>
+                    <div class="player-name">${player.name}</div>
+                    <div class="player-stats">${player.hand.length} cards • $${player.bank.reduce((s, c) => s + c.value, 0)}M</div>
+                    <div class="player-sets">
+                        ${[0,1,2].map(j => `<div class="set-dot ${j < sets ? 'filled' : ''}"></div>`).join('')}
+                    </div>
                 `;
-                oppsDiv.appendChild(div);
+                div.onclick = () => showPlayerInfo(i);
+                playersRow.appendChild(div);
             });
 
-            // Update properties
+            // Turn indicator
+            document.getElementById('turn-text').textContent = game.current === 0 ? 'Your Turn' : `${p.name}'s Turn`;
+            document.getElementById('action-text').textContent = !game.drawn ? 'Draw cards to begin' :
+                game.actions > 0 ? `${game.actions} action${game.actions > 1 ? 's' : ''} remaining` : 'End your turn';
+
+            // Action pips
+            const pips = document.getElementById('action-pips');
+            pips.innerHTML = [0,1,2].map(i => `<div class="action-pip ${i < game.actions ? 'filled' : ''}"></div>`).join('');
+
+            // Properties
             const propsDiv = document.getElementById('properties');
             propsDiv.innerHTML = '';
+            let setsCount = 0;
             for (const color in p.properties) {
-                const row = document.createElement('div');
-                row.className = 'property-row';
-                p.properties[color].forEach(card => {
-                    const mini = document.createElement('div');
-                    mini.className = 'mini-card';
-                    mini.style.background = COLORS[color].hex;
-                    mini.textContent = card.name.substring(0, 8);
-                    row.appendChild(mini);
-                });
-                const complete = p.properties[color].length >= COLORS[color].size;
-                if (complete) {
-                    const badge = document.createElement('div');
-                    badge.className = 'mini-card';
-                    badge.style.background = '#4CAF50';
-                    badge.textContent = '✓';
-                    row.appendChild(badge);
-                }
-                propsDiv.appendChild(row);
-            }
+                const cards = p.properties[color];
+                const isComplete = cards.length >= COLORS[color].size;
+                if (isComplete) setsCount++;
 
-            // Update bank
+                const set = document.createElement('div');
+                set.className = 'property-set' + (isComplete ? ' complete' : '');
+                set.innerHTML = `
+                    <div class="set-header">
+                        <div class="set-color" style="background: ${COLORS[color].hex}"></div>
+                        <div class="set-name">${COLORS[color].name}</div>
+                        <div class="set-progress">${cards.length}/${COLORS[color].size}</div>
+                    </div>
+                    <div class="set-cards">
+                        ${cards.map(c => `<div class="mini-prop" style="border-color: ${COLORS[color].hex}">${c.name.split(' ')[0]}</div>`).join('')}
+                    </div>
+                `;
+                propsDiv.appendChild(set);
+            }
+            document.getElementById('sets-count').textContent = `${setsCount}/3 Sets`;
+
+            // Bank
             const bankDiv = document.getElementById('bank');
             bankDiv.innerHTML = '';
             p.bank.forEach(card => {
-                const mini = document.createElement('div');
-                mini.className = 'mini-card';
-                mini.style.background = '#228B22';
-                mini.textContent = `$${card.value}M`;
-                bankDiv.appendChild(mini);
+                const div = document.createElement('div');
+                div.className = 'bank-card';
+                div.textContent = `$${card.value}M`;
+                bankDiv.appendChild(div);
             });
-            const bankTotal = p.bank.reduce((sum, c) => sum + c.value, 0);
-            document.getElementById('bank-total').textContent = `$${bankTotal}M`;
+            document.getElementById('bank-total').textContent = `$${p.bank.reduce((s, c) => s + c.value, 0)}M`;
 
-            // Update hand
+            // Hand
             const handDiv = document.getElementById('hand');
             handDiv.innerHTML = '';
             p.hand.forEach((card, i) => {
-                const cardEl = createCardElement(card, i);
+                const cardEl = createCardElement(card);
                 if (game.selectedCard === i) cardEl.classList.add('selected');
                 cardEl.onclick = () => selectCard(i);
+                cardEl.ondblclick = () => zoomCard(card);
+                cardEl.oncontextmenu = (e) => { e.preventDefault(); zoomCard(card); };
                 handDiv.appendChild(cardEl);
             });
 
-            // Update buttons
+            // Buttons
             document.getElementById('btn-draw').disabled = game.drawn;
             document.getElementById('btn-play').disabled = game.selectedCard === null || game.actions <= 0;
             document.getElementById('btn-bank').disabled = game.selectedCard === null || game.actions <= 0;
             document.getElementById('btn-end').disabled = !game.drawn;
+
+            // Game log
+            const logDiv = document.getElementById('game-log');
+            logDiv.innerHTML = '';
+            game.log.slice(0, 20).forEach(entry => {
+                const div = document.createElement('div');
+                div.className = 'log-entry ' + entry.type;
+                div.innerHTML = entry.message;
+                logDiv.appendChild(div);
+            });
         }
 
-        // Create card element
-        function createCardElement(card, index) {
+        function createCardElement(card) {
             const div = document.createElement('div');
             div.className = 'card';
 
-            let headerColor = '#666';
+            let headerColor = '#6b7280';
             let headerText = '';
+            let icon = '';
 
             if (card.type === 'property') {
                 headerColor = COLORS[card.color].hex;
                 headerText = COLORS[card.color].name;
+                icon = '🏠';
             } else if (card.type === 'money') {
-                headerColor = '#228B22';
+                headerColor = '#15803d';
                 headerText = 'Money';
+                icon = '💵';
             } else if (card.type === 'action') {
-                headerColor = '#DAA520';
+                headerColor = '#b45309';
                 headerText = 'Action';
+                icon = card.icon || '⚡';
             } else if (card.type === 'rent') {
-                headerColor = '#DC143C';
+                headerColor = '#dc2626';
                 headerText = 'Rent';
+                icon = '💰';
             } else if (card.type === 'wild') {
-                headerColor = '#8A2BE2';
+                headerColor = 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)';
                 headerText = 'Wild';
+                icon = '🌈';
             }
 
             div.innerHTML = `
@@ -814,10 +1391,107 @@
                     ${card.desc ? `<div class="card-desc">${card.desc}</div>` : ''}
                 </div>
                 <div class="card-value">$${card.value}</div>
+                <div class="card-type-icon">${icon}</div>
             `;
 
             return div;
         }
+
+        // ==================== CARD ZOOM ====================
+        function zoomCard(card) {
+            const zoom = document.getElementById('card-zoom');
+            const content = document.getElementById('zoomed-card-content');
+
+            let headerColor = '#6b7280';
+            let headerText = '';
+
+            if (card.type === 'property') {
+                headerColor = COLORS[card.color].hex;
+                headerText = COLORS[card.color].name;
+            } else if (card.type === 'money') {
+                headerColor = '#15803d';
+                headerText = 'Money';
+            } else if (card.type === 'action') {
+                headerColor = '#b45309';
+                headerText = 'Action';
+            } else if (card.type === 'rent') {
+                headerColor = '#dc2626';
+                headerText = 'Rent';
+            } else if (card.type === 'wild') {
+                headerColor = 'linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%)';
+                headerText = 'Wild Property';
+            }
+
+            content.innerHTML = `
+                <div class="card-header" style="background: ${headerColor}">${headerText}</div>
+                <div class="card-body">
+                    <div class="card-name">${card.name}</div>
+                    ${card.desc ? `<div class="card-desc">${card.desc}</div>` : ''}
+                </div>
+                <div class="card-value">$${card.value}</div>
+            `;
+
+            zoom.classList.add('show');
+        }
+
+        function closeZoom() {
+            document.getElementById('card-zoom').classList.remove('show');
+        }
+
+        // ==================== HELP ====================
+        function showHelp() {
+            document.getElementById('help-modal').classList.add('show');
+        }
+
+        function closeHelp() {
+            document.getElementById('help-modal').classList.remove('show');
+        }
+
+        function showPlayerInfo(idx) {
+            const p = game.players[idx];
+            let info = `${p.name}\n\nProperties:\n`;
+            for (const color in p.properties) {
+                info += `  ${COLORS[color].name}: ${p.properties[color].length}/${COLORS[color].size}\n`;
+            }
+            info += `\nBank: $${p.bank.reduce((s, c) => s + c.value, 0)}M`;
+            info += `\nCards in hand: ${p.hand.length}`;
+            alert(info);
+        }
+
+        // ==================== CONFETTI ====================
+        function createConfetti() {
+            const colors = ['#f59e0b', '#6366f1', '#10b981', '#ef4444', '#ec4899'];
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 5000);
+            }
+        }
+
+        // ==================== KEYBOARD SHORTCUTS ====================
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('setup').classList.contains('hidden')) {
+                const key = e.key.toLowerCase();
+                if (key === 'd') drawCards();
+                else if (key === 'p') playSelected();
+                else if (key === 'b') bankSelected();
+                else if (key === 'e') endTurn();
+                else if (key >= '1' && key <= '9') {
+                    const idx = parseInt(key) - 1;
+                    if (idx < game.players[game.current].hand.length) selectCard(idx);
+                }
+                else if (key === 'escape') {
+                    closeZoom();
+                    closeHelp();
+                    document.getElementById('modal').classList.remove('show');
+                }
+            }
+        });
     </script>
 </body>
 </html>
